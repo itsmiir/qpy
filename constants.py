@@ -51,7 +51,7 @@ def help():
     print("---------------------------------")
     print("example:")
     print()
-    print(">>> import constants as qc")
+    print(">>> import qpy.constants as qc")
     print(">>> E_electron = qc.m_e * qc.c**2")
     print(">>> print(E_electron)")
     print("8.187105776823886e-14 J")
