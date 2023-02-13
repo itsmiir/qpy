@@ -1,4 +1,6 @@
 from math import pi
+import sys
+sys.path.append(".")
 
 def lerp(a, b, delta):
     """quality is the percentage of sat. vapor in a mixture of sat vapor and sat liquid"""
@@ -273,6 +275,7 @@ mol = 6.02214076e23
 
 # unit definitions: derived
 One = Unit({},"") # unitless unit; for 1/<unit>
+rad = One # just for readability
 Hz = Unit.derived(One/s, "Hz")
 N = Unit.derived(kg*m/s/s, "N")
 Pa = Unit.derived(N/m/m, "Pa")
@@ -289,6 +292,8 @@ H = Unit.derived(Wb/A, "H")
 Sv = Unit.derived(J/kg, "Sv")
 
 # non-standard derived units: baseUnit = derivedUnit*factor + offset
+deg = Unit.derived(rad, "⁰", 0.01745329)
+
 degC = Unit.derived(K, "⁰C", 1, 273.15)
 
 L = Unit.derived(m*m*m, "L", 0.001)
@@ -542,6 +547,5 @@ if __name__ == '__main__':
     assert (J/(N*m)) == 1
     assert (1 - 5*m/m) == -4
     assert (1000 - km/m) == (m/(2*m) - 1/2) == 0
-    assert ((N*s**2/m**4) == kg/m3)
-    print(simplify(H/F))
+    assert ((N*s**2/m**4) == kg/m3) 
     print("all tests passed")
