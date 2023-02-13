@@ -1,4 +1,4 @@
-from quantity import *
+from quantity import Unit, m, L, mL, J, W, K, degC, N, kg, s, mega, kilo
 
 # unit definition: us customary
 
