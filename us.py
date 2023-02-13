@@ -1,5 +1,7 @@
-from quantity import Unit, m, L, mL, J, W, K, degC, N, kg, s, mega, kilo
-
+if __name__ == "__main__":
+    from quantity import *
+else:
+    from qpy.quantity import *
 # unit definition: us customary
 
 # length

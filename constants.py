@@ -1,4 +1,7 @@
-from quantity import *
+if __name__ == "__main__":
+    from quantity import *
+else:
+    from qpy.quantity import *
 from math import pi
 
 G = Quantity(6.67430e-11, N*m2/kg**2) # gravitational constant
