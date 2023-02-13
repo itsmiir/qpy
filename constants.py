@@ -1,7 +1,7 @@
 from quantity import *
 from math import pi
 
-G = Quantity(6.67430e-11, N*m*m/kg/kg) # gravitational constant
+G = Quantity(6.67430e-11, N*m2/kg**2) # gravitational constant
 c = Quantity(299792458, m/s) # speed of light
 h = Quantity(6.62607015e-34, J*s) # planck constant
 k = Quantity(1.380649e-23, J/K) # boltzmann constant
@@ -11,7 +11,7 @@ g = Quantity(9.80665, m/s/s) # avg surface gravity on earth
 
 mu_0 = Quantity(1.25663706212e-6, N/A/A) # vacuum magnetic permeability
 e_0 = One/(mu_0*c**2) # vacuum electric permittivity
-k_e = Quantity(8.9875517923e9, N*m*m/C/C)
+k_e = Quantity(8.9875517923e9, N*m2/C**2)
 
 m_e = Quantity(9.1093837015e-31, kg) # electron mass
 m_p = Quantity(1.67262192369e-27, kg) # proton mass
@@ -53,8 +53,8 @@ def help():
     print()
     print(">>> import qpy.constants as qc")
     print(">>> E_electron = qc.m_e * qc.c**2")
-    print(">>> print(E_electron)")
-    print("8.187105776823886e-14 J")
+    print(">>> print(E_electron.termsOf(MeV))")
+    print("0.5109989499961642 MeV")
 
 if __name__ == '__main__':
     help()

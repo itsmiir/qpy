@@ -1,4 +1,4 @@
-
+from math import pi
 
 def lerp(a, b, delta):
     """quality is the percentage of sat. vapor in a mixture of sat vapor and sat liquid"""
@@ -86,7 +86,10 @@ class Unit(object):
             unit.vec[i] *= other
         unit.factor = unit.factor**other
         return unit
-
+    def __neg__(self):
+        return -1*self
+    def __pos__(self):
+        return self
     def __truediv__(self, other):
         if type(other) == Quantity:
             return Quantity(self.factor, self)/other
@@ -148,10 +151,9 @@ class Unit(object):
             except KeyError as e:
                 pass
         return True
-    def termsOf(self, other):
-        return (1*self).termsOf(other)
+    def termsOf(self, other, rnd=-1):
+        return (1*self).termsOf(other, rnd)
     
-
 
 class Quantity(object):
     """docstring for Quantity"""
@@ -169,16 +171,22 @@ class Quantity(object):
     def __add__(self, other):
         if type(other) == Unit:
             return self + Quantity(1, other)
-        if not other.unit == self.unit:
-            raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
-        return Quantity(self.value+other.value, self.unit)
+        elif type(other) == Quantity:
+            if not other.unit == self.unit:
+                raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
+            return Quantity(self.value+other.value, self.unit)
+        else:
+            if self.unit == One:
+                return self.value + other.value
+            else:
+                raise ArithmeticError("Incompatible units: "+str(self)+" and "+str(other))
     def __radd__(self, other):
         return self + other
 
     def __sub__(self, other):
         return self + -1 * other
     def __rsub__(self, other):
-        return self - other
+        return other + -1*self
 
     def __mul__(self, other):
         if type(other) == Unit:
@@ -189,7 +197,6 @@ class Quantity(object):
             return Quantity(other*self.value, self.unit)
     def __rmul__(self, other):
         return self * other
-
     def __truediv__(self, other):
         if type(other) == Unit:
             return self / Quantity(1, other)
@@ -200,7 +207,7 @@ class Quantity(object):
         else:
             return Quantity(self.value/other, self.unit)
     def __rtruediv__(self, other):
-        return self * (1/other)
+        return (One/self) * other
 
     def __round__(self, i):
         return Quantity(round(self.value, i), self.unit)
@@ -214,16 +221,20 @@ class Quantity(object):
         if type(other) == Unit:
             return self == Quantity(1, other)
         return other.value == self.value and other.unit == self.unit
+    def __neg__(self):
+        return -1*self
+    def __pos__(self):
+        return self
     def __pow__(self, other):
         return Quantity(self.value**other, self.unit**other)
-    def termsOf(self, other,rnd: int=0)->str:
+    def termsOf(self, other,rnd: int=-1)->str:
         if type(other) == Unit:
             return self.termsOf(1*other, rnd)
         elif type(other) == Quantity:
             if self.unit != other.unit:
                 raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
             val = self.value/other.value
-            if rnd > 0:
+            if rnd > -1:
                 val = round(val, rnd)
             return (str(val)+" "+other.unit.name)
     def round(self, digits):
@@ -277,13 +288,11 @@ T = Unit.derived(Wb/m/m, "T")
 H = Unit.derived(Wb/A, "H")
 Sv = Unit.derived(J/kg, "Sv")
 
-
 # non-standard derived units: baseUnit = derivedUnit*factor + offset
 degC = Unit.derived(K, "⁰C", 1, 273.15)
 
 L = Unit.derived(m*m*m, "L", 0.001)
 mL = Unit.derived(L, "mL", 0.001)
-
 
 ms = milli(s)
 us = micro(s)
@@ -334,13 +343,15 @@ MW = mega(W)
 GW = giga(W)
 TW = tera(W)
 
+nm = nano(m)
+um = micro(m)
+mm = milli(m)
+km = kilo(m)
 Gm = giga(m)
 Mm = mega(m)
-km = kilo(m)
-mm = milli(m)
-um = micro(m)
-nm = nano(m)
 au = Unit.derived(m, "au", 149597870700)
+pc = Unit.derived(au, "pc", 648000/pi)
+ly = Unit.derived(m, "ly", 9460730472580800)
 
 m2 = Unit.derived(m*m, "(m²)")
 m3 = Unit.derived(m*m*m, "(m³)")
@@ -528,6 +539,9 @@ if __name__ == '__main__':
     assert (kg*Wb/T/J*Hz**2) == 1
     assert (Pa/V/A/Wb/N*W*H*C*m**2*Hz) == 1
     assert ((kPa/V*Sv**3/C*N/W**3*H**2/W*A/Hz**3*g)==s**3/A**3)
-    assert (1) == 1
-    assert((N*s**2/m**4) == kg/m3)
+    assert (J/(N*m)) == 1
+    assert (1 - 5*m/m) == -4
+    assert (1000 - km/m) == (m/(2*m) - 1/2) == 0
+    assert ((N*s**2/m**4) == kg/m3)
+    print(simplify(H/F))
     print("all tests passed")
