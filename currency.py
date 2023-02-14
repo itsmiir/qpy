@@ -68,7 +68,7 @@ def getRates():
     return conv.copy()
 
 def makeRequest():
-    wd = Watchdog(10)
+    wd = Watchdog(60)
     response = requests.request("GET", _url, headers=_headers, data = _payload)
     status_code = response.status_code
     result = response.text

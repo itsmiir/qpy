@@ -136,7 +136,10 @@ class Unit(object):
             return str(self.factor) + " "+ strin
         else:
             return strin
-
+    def __float__(self):
+        return self.factor
+    def __int__(self):
+        return int(float(self))
     def dotProduct(self, other):
         k=0
         for i in self.vec:
@@ -164,8 +167,12 @@ class Quantity(object):
             self.unit = unit.unit
             self.value = unit.value*value # lmao
         else:
-            self.unit = unit.copy()
-            self.value = (value*unit.factor)+unit.offset
+            try:
+                self.unit = unit.copy()
+                self.value = (value*self.unit.factor)+self.unit.offset
+            except AttributeError:
+                self.unit = One
+                self.value = value
             self.unit.factor = 1
             self.unit.offset = 0
         self.digits = digits
@@ -179,7 +186,9 @@ class Quantity(object):
             return Quantity(self.value+other.value, self.unit)
         else:
             if self.unit == One:
-                return self.value + other.value
+                return self.value + other
+            elif other == 0:
+                return self
             else:
                 raise ArithmeticError("Incompatible units: "+str(self)+" and "+str(other))
     def __radd__(self, other):
@@ -219,6 +228,12 @@ class Quantity(object):
         else:
             val = self.value
         return str(val)+" "+str(simplify(self.unit))
+    def __float__(self):
+        return self.value
+    def __int__(self):
+        return int(float(self))
+    def __repr__(self):
+        return str(self)
     def __eq__(self, other):
         if type(other) == Unit:
             return self == Quantity(1, other)
