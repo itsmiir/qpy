@@ -136,6 +136,8 @@ class Unit(object):
             return str(self.factor) + " "+ strin
         else:
             return strin
+    def __repr__(self) -> str:
+        return str(self)
     def __float__(self):
         return self.factor
     def __int__(self):
@@ -181,7 +183,7 @@ class Quantity(object):
         if type(other) == Unit:
             return self + Quantity(1, other)
         elif type(other) == Quantity:
-            if not other.unit == self.unit:
+            if not other.unit == self.unit and other.value != 0 and self.value != 0:
                 raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
             return Quantity(self.value+other.value, self.unit)
         else:
@@ -200,6 +202,8 @@ class Quantity(object):
         return other + -1*self
 
     def __mul__(self, other):
+        if other == 0:
+            return 0
         if type(other) == Unit:
             return self * Quantity(1, other)
         elif type(other) == Quantity:
@@ -237,7 +241,12 @@ class Quantity(object):
     def __eq__(self, other):
         if type(other) == Unit:
             return self == Quantity(1, other)
-        return other.value == self.value and other.unit == self.unit
+        elif type(other) == Quantity:
+            return other.value == self.value and other.unit == self.unit
+        elif self.unit == One:
+            return self.value == other
+        else:
+            return False
     def __neg__(self):
         return -1*self
     def __pos__(self):
