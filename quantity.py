@@ -28,7 +28,6 @@ superscripts = {
 }
 
 def toSuperscript(num):
-    # print(num)
     n = str(num)
     newN = ""
     for i in n:
@@ -36,7 +35,7 @@ def toSuperscript(num):
     return newN        
 
 class Unit(object):
-    """docstring for Unit"""
+    """represents a base or derived unit"""
     def __init__(self, vec, name="", factor=1, offset=0):
         # super(Unit, self).__init__()
         self.vec = vec.copy()
@@ -48,8 +47,6 @@ class Unit(object):
         self.factor = factor
         self.offset = offset
 
-    def base(symbol, ):
-        pass
     def copy(self):
         newUnit = Unit(self.vec.copy(), self.name, self.factor, self.offset)
         return newUnit
