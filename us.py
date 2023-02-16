@@ -1,7 +1,4 @@
-if __name__ == "__main__":
-    from quantity import *
-else:
-    from qpy.quantity import *
+from .quantity import *
 # unit definition: us customary
 
 # length

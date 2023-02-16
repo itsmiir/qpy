@@ -1,7 +1,4 @@
-if __name__ == "__main__":
-    from quantity import *
-else:
-    from qpy.quantity import *
+from .quantity import *
 
 bit = Unit({"b": 1}, "b")
 nybble = Unit.derived(bit, "nybble", 4)
