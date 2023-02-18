@@ -14,7 +14,7 @@ mi2 = Unit.derived(mi**2, "(mi²)")
 acre = Unit.derived(m**2, "acre", 4046.873)
 
 # volume
-ft3 = Unit.derived(L, "(ft³)", 28.316846592)
+ft3 = Unit.derived(m*m*m, "(ft³)", 0.02831685)
 in3 = Unit.derived(inch**3, "(in³)")
 tsp = Unit.derived(mL, "tsp", 4.92892159375)
 Tbsp = Unit.derived(tsp, "Tbsp", 3)

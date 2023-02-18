@@ -80,7 +80,6 @@ class Unit(object):
 
     def __pow__(self, other):
         unit = self.copy()
-        orig = self.copy()
         for i in unit.vec:
             unit.vec[i] *= other
         unit.factor = unit.factor**other
@@ -110,7 +109,6 @@ class Unit(object):
         return One/self * other
 
     def __eq__(self, other):
-        # print(self.factor, other.factor)
         if type(other) == Unit and other.factor == self.factor:
             return self / other == 1
         if self.factor != 1 or self.offset != 0:
@@ -120,8 +118,6 @@ class Unit(object):
 
     def __str__(self):
         strin = ""
-        l=len(self.vec)
-        # self.vec = sorted(self.vec.items(), key=lambda x:x[1], reverse=True)
         for k in sorted(self.vec):
             if self.vec[k] == 0:
                 pass
@@ -157,7 +153,8 @@ class Unit(object):
         return True
     def termsOf(self, other, rnd=-1):
         return (1*self).termsOf(other, rnd)
-    
+    def getDisplayName(self):
+        pass  
 
 class Quantity(object):
     """docstring for Quantity"""
@@ -252,11 +249,13 @@ class Quantity(object):
         return Quantity(self.value**other, self.unit**other)
     def termsOf(self, other,rnd: int=-1)->str:
         if type(other) == Unit:
+            if (other.offset != 0):
+                return self.termsOf(1)
             return self.termsOf(1*other, rnd)
         elif type(other) == Quantity:
             if self.unit != other.unit:
                 raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
-            val = self.value/other.value
+            val = self.value/(other.value+other.unit.offset)
             if rnd > -1:
                 val = round(val, rnd)
             return (str(val)+" "+other.unit.name)
@@ -552,7 +551,7 @@ def simplify(unit,expU=explicitUnits):
     return strn
 
 
-# todo: conversion factors
+# todo: m3 rendering as m in certain scenarios??
 # todo: readme
 if __name__ == '__main__':
     print("checking units...")
