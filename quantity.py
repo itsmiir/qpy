@@ -92,9 +92,9 @@ class Unit(object):
         if type(other) == Quantity:
             return Quantity(self.factor, self)/other
         elif type(other) != Unit:
-            return Quantity(self.factor/other, self)
-        selfs= self.vec.copy()
-        others=other.vec.copy()
+            return Quantity(1/other, self)
+        selfs  = self.vec.copy()
+        others = other.vec.copy()
         for k in others:
             if k in selfs:
                 selfs[k] = -others[k] + selfs[k]
