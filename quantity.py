@@ -73,7 +73,7 @@ class Unit(object):
                 selfs[k] = others[k]
         for k in selfs:
             if not selfs[k] == 0:
-                return Unit(selfs, "", self.factor*other.factor)
+                return Unit(selfs, self.name+"•"+other.name, self.factor*other.factor)
         return self.factor * other.factor
     def __rmul__(self, other):
         return self * other
@@ -220,6 +220,10 @@ class Quantity(object):
 
     def __round__(self, i):
         return Quantity(round(self.value, i), self.unit)
+    
+    def __cmp__(self, other):
+        return (self - other).value
+
     def __str__(self):
         if self.digits > 0:
             val = round(self.value, self.digits)
@@ -241,6 +245,15 @@ class Quantity(object):
             return self.value == other
         else:
             return False
+    def __gt__(self, other):
+        return (self - other).value > 0
+    def __lt__(self, other):
+        return (self - other).value < 0
+    def __ge__(self, other):
+        return (self - other).value >= 0
+    def __le__(self, other):
+        return (self - other).value <= 0
+    
     def __neg__(self):
         return -1*self
     def __pos__(self):
@@ -296,6 +309,8 @@ mol = 6.02214076e23
 # unit definitions: derived
 One = Unit({},"") # unitless unit; for 1/<unit>
 rad = One # just for readability
+pct = Unit.derived(One, "%", .01)
+
 Hz = Unit.derived(One/s, "Hz")
 N = Unit.derived(kg*m/s/s, "N")
 Pa = Unit.derived(N/m/m, "Pa")
@@ -414,10 +429,10 @@ ng = nano(g)
 
 
 # units that printed answers can be expressed in
-# includes all listed derived units except Sv because i find that J/kg is often more useful by itself
+# includes most named, derived units except Sv because i find that J/kg is often more useful by itself
 # ordering: a unit must always go before its inverse (i.e., s must go before Hz) so that the unit simplifier
 # does not use units of 1/Hz for time!
-# updating this list (via addUnits or setUnits, please) will change what values get simplified
+# updating this list (via addBaseUnit, please) will change what values get simplified
 units = [
     J, W, N, Pa, C, F, V, Ohm, S, Wb, T, H, kg, m, A, K, cd, s, Hz
 ]

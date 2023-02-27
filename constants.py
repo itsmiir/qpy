@@ -1,5 +1,4 @@
 from .quantity import *
-from math import pi
 
 G = Quantity(6.67430e-11, N*m2/kg**2) # gravitational constant
 c = Quantity(299792458, m/s) # speed of light
@@ -7,7 +6,7 @@ h = Quantity(6.62607015e-34, J*s) # planck constant
 k = Quantity(1.380649e-23, J/K) # boltzmann constant
 e = Quantity(1.602176634e-19, C) # elementary charge
 
-g = Quantity(9.80665, m/s/s) # avg surface gravity on earth
+g_earth = Quantity(9.80665, m/s/s) # avg surface gravity on earth
 
 mu_0 = Quantity(1.25663706212e-6, N/A/A) # vacuum magnetic permeability
 e_0 = One/(mu_0*c**2) # vacuum electric permittivity
@@ -41,7 +40,7 @@ def help():
     print("proton mass:          m_p:", m_p)
     print("neutron mass:         m_n:", m_n)
     print()
-    print("mean gravity of earth:  g:", g)
+    print("mean gravity of earth:  g_earth:", g)
     print()
     print("Planck length:   l_planck:", l_planck)
     print("Planck masss:    m_planck:", m_planck)
