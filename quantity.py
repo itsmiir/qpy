@@ -263,8 +263,12 @@ class Quantity(object):
     def termsOf(self, other,rnd: int=-1)->str:
         if type(other) == Unit:
             if (other.offset != 0):
-                return self.termsOf(1)
-            return self.termsOf(1*other, rnd)
+                val = (self.value-other.offset)/other.factor
+            else:
+                val = self.value/other.factor
+            if rnd > -1:
+                val = round(val, rnd)
+            return (str(val)+" "+other.name)
         elif type(other) == Quantity:
             if self.unit != other.unit:
                 raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
