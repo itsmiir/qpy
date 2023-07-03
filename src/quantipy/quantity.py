@@ -1,6 +1,30 @@
 from math import pi
 import sys
+import json
+import os
+CONFIG = {
+    "relativity mode": False
+}
+
 sys.path.append(".")
+
+_directory = os.path.dirname(os.path.abspath(__file__))
+with open(_directory+"/config.json") as f:
+    CONFIG = json.load(f)
+
+def toggleRelativityMode():
+    if (CONFIG["relativity mode"]):
+        CONFIG["relativity mode"] = False
+        print("relativity mode off! restart to apply!")
+        with open(_directory+"/config.json", "w") as f:
+            f.write(json.dumps(CONFIG))
+    else:
+        CONFIG["relativity mode"] = True
+        print("relativity mode on! the speed of light is 1!")
+        print("this feature is highly experimental and will likely break some functionality!")
+        print("restart to apply!")
+        with open(_directory+"/config.json", "w") as f:
+            f.write(json.dumps(CONFIG))
 
 def lerp(a, b, delta):
     """quality is the percentage of sat. vapor in a mixture of sat vapor and sat liquid"""
@@ -52,6 +76,8 @@ class Unit(object):
         return newUnit
 
     def derived(unit, name, factor=1, offset=0):
+        if (type(unit) == float):
+            return Unit({},name, factor, offset)
         newUnit = unit.copy()
         newUnit.factor = unit.factor*factor
         newUnit.offset = unit.offset+offset
@@ -299,7 +325,11 @@ def peta(unit):
 
 # unit definitions: base
 s = Unit({"s": 1}, "s")
-m = Unit({"m": 1}, "m")
+if CONFIG["relativity mode"]:
+    print("warning: using experimental relativity mode. c = 1!")
+    m = Unit.derived(s, "m", 1/299792458)
+else:
+    m = Unit({"m": 1}, "m")
 kg = Unit({"kg": 1}, "kg")
 A = Unit({"A": 1}, "A")
 K = Unit({"K": 1}, "K")
@@ -434,10 +464,16 @@ ng = nano(g)
 # does not use units of 1/Hz for time!
 # updating this list (via addBaseUnit, please) will change what values get simplified
 units = [
-    J, W, N, Pa, C, F, V, Ohm, S, Wb, T, H, kg, m, A, K, cd, s, Hz
+    W, N, Pa, C, F, V, Ohm, S, Wb, T, H, kg, A, K, cd, s, Hz
 ]
 def addBaseUnit(unit):
     units.append(unit)
+
+if (not CONFIG["relativity mode"]):
+    # in relativity mode, energy == mass and distance == time
+    units.append(m)
+    units.append(J)
+
 def setUnits(us):
     units = us
 def getUnits():

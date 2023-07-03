@@ -1,4 +1,4 @@
-### what is qpy?
+### what is quantipy?
 
 quantipy is a dimensional analysis module for engineering and physics applications that allows you to manipulate quanities in an intutive way. it also enforces proper unit usage and prevents many unit errors.
 
@@ -15,13 +15,14 @@ pCombined = m1*v1 + m2*v2
 m3 = m1 + m2
 v3 = pCombined/m3
 print(v3)
-# >>> 4.666666666666667 ms⁻¹
+# 4.666666666666667 ms⁻¹
 ```
 ### ok, but how is that useful?
 
-sure, that example didn't really need qpy. but that's not all it can do: for example, take this calculation for the force of an electromagnet using the equation $F = (NI)^2\mu_0 \frac{A}{2l^2}$:
+sure, that example didn't really need quantipy. but that's not all it can do: for example, take this calculation for the force of an electromagnet using the equation $F = (NI)^2\mu_0 \frac{A}{2l^2}$:
 ```py
 from quantipy import *
+from quantipy.constants import mu_0
 m_1 = 0.9*lbm
 g = 9.8*m/s**2
 I = 3*A
@@ -35,9 +36,9 @@ if (F > m_1*g):
     print("magnet can lift load!")
 else:
     print("magnet is underpowered :(")
-# >>> 35.3429 N
-# >>> 4.0007 N
-# >>> magnet can lift load!
+# 35.3429 N
+# 4.0007 N
+# magnet can lift load!
 ```
 a little more useful, huh?
 
@@ -53,15 +54,26 @@ weight = 430*lbf
 
 dataPerWeightCurrency = data/price/weight
 print(dataPerWeightCurrency.termsOf(MB/(EUR*kN), 4))
-# >>> 34.3292 MB/EUR•kN
+# 34.3292 MB/EUR•kN
 ```
 ```py
 from quantipy import *
 import quantipy.constants as qc
 mass = 3.043*qc.MeVc2
-num_electrons = mass / qc.m_e # call constants.help() to see all available constants
+num_electrons = mass / qc.m_e # call qc.help() to see all available constants
 print(round(num_electrons, 0))
-# >>> 6.0
+# 6.0
+```
+you can even define your own custom constants with your own symbols and conversion factors and use them in your code!
+```py
+from quantipy import *
+Fizz = Unit.derived(USD/kg, "Fz", 12)
+value = 12000*USD/kg
+print(value.termsOf(Fizz))
+# 1000 Fz
+newValue = 1000*Fizz
+print(newValue == value)
+# True
 ```
 
 ### installation

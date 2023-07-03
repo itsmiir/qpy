@@ -26,7 +26,6 @@ class Watchdog(Exception):
 
 
 _directory = os.path.dirname(os.path.abspath(__file__))
-print()
 _exchangeRatePath = _directory+"/exchange.json"
 _keyPath = _directory+"/api_key.txt"
 _url = "https://api.apilayer.com/exchangerates_data/latest?symbols=&base=USD"
