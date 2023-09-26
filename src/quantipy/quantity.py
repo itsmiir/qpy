@@ -2,41 +2,36 @@ from math import pi
 import sys
 import json
 import os
-CONFIG = {
-    "relativity mode": False
+
+NATURAL_UNITS_MODE = "natural mode"
+__CONFIG = {
+    NATURAL_UNITS_MODE: False
 }
+
+def naturalUnits() -> bool:
+    return __CONFIG[NATURAL_UNITS_MODE]
 
 sys.path.append(".")
 
 _directory = os.path.dirname(os.path.abspath(__file__))
 with open(_directory+"/config.json") as f:
-    CONFIG = json.load(f)
+    __CONFIG = json.load(f)
 
-def toggleRelativityMode():
-    if (CONFIG["relativity mode"]):
-        CONFIG["relativity mode"] = False
-        print("relativity mode off! restart to apply!")
+def toggleNaturalMode():
+    if (naturalUnits()):
+        __CONFIG[NATURAL_UNITS_MODE] = False
+        print("natural units mode off! restart to apply!")
         with open(_directory+"/config.json", "w") as f:
-            f.write(json.dumps(CONFIG))
+            f.write(json.dumps(__CONFIG))
     else:
-        CONFIG["relativity mode"] = True
-        print("relativity mode on! the speed of light is 1!")
+        __CONFIG[NATURAL_UNITS_MODE] = True
+        print("natural units mode on! the speed of light is 1!")
         print("this feature is highly experimental and will likely break some functionality!")
         print("restart to apply!")
         with open(_directory+"/config.json", "w") as f:
-            f.write(json.dumps(CONFIG))
+            f.write(json.dumps(__CONFIG))
 
-def lerp(a, b, delta):
-    """quality is the percentage of sat. vapor in a mixture of sat vapor and sat liquid"""
-    return a + (b - a) * delta
-
-def getDelta(a, b, middle):
-    return (middle - a)/(b - a) 
-
-def flerp(x, x1, x2, y1, y2):
-    return lerp(y1, y2, getDelta(x1, x2, x))
-
-superscripts = {
+__superscripts = {
     "0":"⁰",
     "1":"¹",
     "2":"²",
@@ -55,7 +50,7 @@ def toSuperscript(num):
     n = str(num)
     newN = ""
     for i in n:
-        newN += superscripts[i]
+        newN += __superscripts[i]
     return newN        
 
 class Unit(object):
@@ -110,6 +105,11 @@ class Unit(object):
             unit.vec[i] *= other
         unit.factor = unit.factor**other
         return unit
+    
+    def root(value, root):
+        """computes (value)**(1/root)"""
+        pass
+
     def __neg__(self):
         return -1*self
     def __pos__(self):
@@ -142,19 +142,30 @@ class Unit(object):
         else:
             return len(self.vec) == 0 and other == self.factor
 
-    def __str__(self):
+    def getVecStr(self):
         strin = ""
-        for k in sorted(self.vec):
+        for k in sorted(self.vec, key=lambda k: self.vec[k], reverse=True):
             if self.vec[k] == 0:
                 pass
             elif self.vec[k] != 1:
                 strin +=(k + toSuperscript(self.vec[k]))
             else:
                 strin +=(k)
+        return strin
+    def __str__(self):
+        if self.isBase():
+            return self.name
         if self.factor != 1:
-            return str(self.factor) + " "+ strin
+            return str(self.factor) + " "+ simplify(self)
         else:
-            return strin
+            return simplify(self)
+    
+    def isBase(self):
+        v = 0
+        for u in self.vec:
+            v += self.vec[u]
+        return v == 1 or v == 0
+
     def __repr__(self) -> str:
         return str(self)
     def __float__(self):
@@ -289,12 +300,13 @@ class Quantity(object):
     def termsOf(self, other,rnd: int=-1)->str:
         if type(other) == Unit:
             if (other.offset != 0):
-                return self.termsOf(1)
+                val = (self.value-other.offset) / other.factor
+                return (str(val)+" "+other.name)
             return self.termsOf(1*other, rnd)
         elif type(other) == Quantity:
             if self.unit != other.unit:
                 raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
-            val = self.value/(other.value+other.unit.offset)
+            val = self.value/(other.value)+other.unit.offset
             if rnd > -1:
                 val = round(val, rnd)
             return (str(val)+" "+other.unit.name)
@@ -325,11 +337,10 @@ def peta(unit):
 
 # unit definitions: base
 s = Unit({"s": 1}, "s")
-if CONFIG["relativity mode"]:
-    print("warning: using experimental relativity mode. c = 1!")
+m = Unit({"m": 1}, "m")
+if naturalUnits():
+    print("warning: using experimental natural units mode. c = 1!")
     m = Unit.derived(s, "m", 1/299792458)
-else:
-    m = Unit({"m": 1}, "m")
 kg = Unit({"kg": 1}, "kg")
 A = Unit({"A": 1}, "A")
 K = Unit({"K": 1}, "K")
@@ -345,7 +356,11 @@ Hz = Unit.derived(One/s, "Hz")
 N = Unit.derived(kg*m/s/s, "N")
 Pa = Unit.derived(N/m/m, "Pa")
 J = Unit.derived(N*m, "J")
-W = Unit.derived(J/s, "W")
+
+if naturalUnits():
+    W = N
+else:
+    W = Unit.derived(J/s, "W")
 C = Unit.derived(s*A, "C")
 V = Unit.derived(W/A, "V")
 F = Unit.derived(C/V, "F")
@@ -354,8 +369,10 @@ S = Unit.derived(One/Ohm, "S")
 Wb = Unit.derived(V*s, "Wb")
 T = Unit.derived(Wb/m/m, "T")
 H = Unit.derived(Wb/A, "H")
-Sv = Unit.derived(J/kg, "Sv")
-
+if naturalUnits():
+    Sv = One
+else:
+    Sv = Unit.derived(J/kg, "Sv")
 # non-standard derived units: baseUnit = derivedUnit*factor + offset
 deg = Unit.derived(rad, "⁰", 0.01745329)
 
@@ -376,6 +393,9 @@ wk = Unit.derived(day, "wk", 7)
 yr = Unit.derived(day, "yr", 365.25)
 My = Unit.derived(yr, "My", 1e6)
 aeon = Unit.derived(yr, "AE", 1e9)
+
+cal = Unit.derived(J, "cal", 4.184)
+kcal = kilo(cal)
 
 eV = Unit.derived(J, "eV", 1.602176634e-19)
 keV = kilo(eV)
@@ -464,15 +484,30 @@ ng = nano(g)
 # does not use units of 1/Hz for time!
 # updating this list (via addBaseUnit, please) will change what values get simplified
 units = [
-    W, N, Pa, C, F, V, Ohm, S, Wb, T, H, kg, A, K, cd, s, Hz
+    C, kg, A, K, cd, s, Hz
 ]
 def addBaseUnit(unit):
     units.append(unit)
 
-if (not CONFIG["relativity mode"]):
-    # in relativity mode, energy == mass and distance == time
+if (not naturalUnits()):
+    # in relativity mode, 
+    # energy == mass,
+    # distance == time,
+    # power == force
+
     units.append(m)
+    units.append(N)
     units.append(J)
+    units.append(Pa)
+    units.append(F)
+    units.append(V)
+    units.append(Ohm)
+    units.append(W)
+    units.append(H)
+    units.append(T)
+    units.append(Wb)
+    units.append(S)
+
 
 def setUnits(us):
     units = us
@@ -503,17 +538,18 @@ def getDistance(unit1, unit2):
         #     pass
     for i in d.vec:
         sum+=(d.vec[i]**2)
-    return (sum)**.5
-
+    return (sum)
 def __simplify(unit, expU, units=units):
     """if you're curious, this function sequentially factors out the "closest" unit to the unit being tested;
     "closest" being defined via euclidean (ish) distance in 6D base-SI-unit space
     """
     if type(unit) != Unit:
         return ""
+    if unit == Hz:
+        return Hz.name
     for i in expU:
         if unit == i:
-            return str(unit)
+            return unit.getVecStr()
     d = getDistance(unit, units[0])
     closest = [units[0], False, 1]
     for i in units:
@@ -548,27 +584,48 @@ def __simplify(unit, expU, units=units):
                 if d1 < d:
                     d = d1
                     closest[0] = i
-                    # print(i)
+                    # print(i.name)
                     closest[1]=True
                     closest[2]=order
 
-    if (closest[2])==0:
-          return str(closest[0])
+    closestUnit = closest[0]
+    expIsNegative = closest[1]
+    exponent = closest[2]
+    exponentStr = ""
+
+    if exponent != 1 or expIsNegative:
+        if expIsNegative:
+            exponentStr += "⁻";
+        exponentStr += toSuperscript(exponent)
+    simplifiedStr = closestUnit.name + exponentStr
+    if expIsNegative:
+        newUnit = unit*(closestUnit**exponent)
     else:
-        name = closest[0].name
-    if d == 0:
-        s=""
-        if closest[1]:
-            s = "⁻"
-        u = s+name
-        for i in range(closest[2]-1):
-            u+= " "
-            u+= (s+name)
-        return u
-    if closest[1]:
-        return ("⁻"+name+" ")*closest[2] +__simplify(unit*(closest[0]**closest[2]), expU)
-    # print("closest:", closest[0], closest[2])
-    return ((closest[0]**closest[2]).name+" ")+ __simplify(unit/(closest[0]**closest[2]), expU)
+        newUnit = unit/(closestUnit**exponent)
+    if newUnit == One:
+        return simplifiedStr
+    else:
+        return simplifiedStr+ __simplify(newUnit, expU)
+    # if (closest[2])==0:
+    #       return closest[0].name
+    # else:
+    #     name = closest[0].name
+    # if d == 0:
+    #     s=""
+    #     if closest[1]:
+    #         s = "⁻"
+    #     u = s+name
+    #     for i in range(closest[2]-1):
+    #         u+= " "
+    #         u+= (s+name)
+    #     return u
+    # if closest[1]:
+    #     return (str(closest[0].name)+s)+ __simplify(unit*(closest[0]**closest[2]), expU)
+    # if closest[2] == 1:
+    #     s = ""
+    # else:
+    #     s = toSuperscript(closest[2])
+    # return (str(closest[0].name)+s)+ __simplify(unit/(closest[0]**closest[2]), expU)
 
 def simplify(unit,expU=explicitUnits):
     # print(unit)
@@ -592,7 +649,8 @@ def simplify(unit,expU=explicitUnits):
             else:
                 units[u] = 1
     strn = ""
-    for i in units:
+    unitsSrt = sorted(units, key=lambda k: units[k], reverse=True)
+    for i in unitsSrt:
         if units[i] == 0:
             pass
         if units[i] == 1:
@@ -602,12 +660,12 @@ def simplify(unit,expU=explicitUnits):
     return strn
 
 
-# todo: m3 rendering as m in certain scenarios??
 # todo: readme
 if __name__ == '__main__':
     print("checking units...")
     assert (1.5*V) * (10*mA) == 15*mW
     assert (373.15*K) == (100*degC)
+    print (1*C/m3, 1*Pa/V)
     assert C/m3 == Pa/V
     assert 1*F*V + A*s == 2*C
     assert 3*L-L == round((m/20)*(m/5)*(m/5), 15)
@@ -620,4 +678,5 @@ if __name__ == '__main__':
     assert (1 - 5*m/m) == -4
     assert (1000 - km/m) == (m/(2*m) - 1/2) == 0
     assert ((N*s**2/m**4) == kg/m3) 
+    print((100*K).termsOf(degC))
     print("all tests passed")
