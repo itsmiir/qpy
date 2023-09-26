@@ -4,7 +4,9 @@ G = 6.67430e-11*(N*m2/kg**2) # gravitational constant
 c = 299792458*m/s # speed of light
 h = 6.62607015e-34*J*s # planck constant
 k = 1.380649e-23*J/K # boltzmann constant
+R_ideal = k*mol
 e = 1.602176634e-19*C # elementary charge
+sigma_sb = (2*pi**5*k**4)/(15*c**2*h**3)
 
 g_earth = 9.80665*m/s/s # avg surface gravity on earth
 
@@ -23,14 +25,16 @@ t_planck = 5.391247e-44*s
 T_planck = 1.416784e+32*K
 E_planck = m_planck*c**2
 
-def help():
+def qpy_constants_help():
     print("constant:   variable name: value")
     print("--------------------------------")
     print("speed of light:         c:", c)
     print("Planck constant:        h:", h)
     print("Boltzmann constant:     k:", k)
+    print("ideal gas constant: R_ideal:", R_ideal)
     print("elementary charge:      e:", e)
     print("gravitational constant: G:", G)
+    print("Stefan-Boltzmann constant: sigma_sb:", sigma_sb)
     print()
     print("vacuum permeability: mu_0:", mu_0)
     print("vacuum permittivity:  e_0:", e_0)
@@ -40,7 +44,7 @@ def help():
     print("proton mass:          m_p:", m_p)
     print("neutron mass:         m_n:", m_n)
     print()
-    print("mean gravity of earth:  g_earth:", g)
+    print("earth acc. due to gravity:  g_earth:", g)
     print()
     print("Planck length:   l_planck:", l_planck)
     print("Planck masss:    m_planck:", m_planck)
