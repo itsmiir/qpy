@@ -134,3 +134,4 @@ test.py
 .vscode/
 qpy.code-workspace
 makefile
+test.ipynb
