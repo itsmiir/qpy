@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "quantipy"
+name = "qntpy"
 version = "1.0.0"
 authors = [
   { name="miir", email="itsmiir@outlook.com" },

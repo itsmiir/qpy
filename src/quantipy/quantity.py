@@ -18,6 +18,9 @@ with open(_directory+"/config.json") as f:
     __CONFIG = json.load(f)
 
 def toggleNaturalMode():
+    """this is an experimental setting that redefines every constant such that the speed of light is 1 (unitless).
+    it's intentionally obtuse to use because i'm not quite sure that it works properly.
+    """
     if (naturalUnits()):
         __CONFIG[NATURAL_UNITS_MODE] = False
         print("natural units mode off! restart to apply!")
@@ -71,6 +74,7 @@ class Unit(object):
         return newUnit
 
     def derived(unit, name, factor=1, offset=0):
+        """creates a new derived unit."""
         if (type(unit) == float):
             return Unit({},name, factor, offset)
         newUnit = unit.copy()
@@ -194,7 +198,7 @@ class Unit(object):
         pass
 
 class Quantity(object):
-    """docstring for Quantity"""
+    """represents a numerical value with an attached unit"""
     def __init__(self, value, unit, digits:int=0):
         if type(unit) == Quantity:
             self.unit = unit.unit
@@ -364,8 +368,8 @@ else:
 C = Unit.derived(s*A, "C")
 V = Unit.derived(W/A, "V")
 F = Unit.derived(C/V, "F")
-Ohm = Unit.derived(V/A, "Ω")
-S = Unit.derived(One/Ohm, "S")
+ohm = Unit.derived(V/A, "Ω")
+S = Unit.derived(One/ohm, "S")
 Wb = Unit.derived(V*s, "Wb")
 T = Unit.derived(Wb/m/m, "T")
 H = Unit.derived(Wb/A, "H")
@@ -463,9 +467,9 @@ mH = milli(H)
 uH = micro(H)
 nH = nano(H)
 
-kOhm = kilo(Ohm)
-MOhm = mega(Ohm)
-GOhm = giga(Ohm)
+kohm = kilo(ohm)
+Mohm = mega(ohm)
+Gohm = giga(ohm)
 
 kHz = kilo(Hz)
 MHz = mega(Hz)
@@ -501,7 +505,7 @@ if (not naturalUnits()):
     units.append(Pa)
     units.append(F)
     units.append(V)
-    units.append(Ohm)
+    units.append(ohm)
     units.append(W)
     units.append(H)
     units.append(T)

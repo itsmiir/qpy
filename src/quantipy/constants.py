@@ -25,7 +25,7 @@ t_planck = 5.391247e-44*s
 T_planck = 1.416784e+32*K
 E_planck = m_planck*c**2
 
-def qpy_constants_help():
+def constants():
     print("constant:   variable name: value")
     print("--------------------------------")
     print("speed of light:         c:", c)
@@ -60,4 +60,4 @@ def qpy_constants_help():
     print("0.5109989499961642 MeV")
 
 if __name__ == '__main__':
-    help()
+    constants()

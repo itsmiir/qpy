@@ -3,7 +3,7 @@ from .quantity import *
 
 # length
 ft = Unit.derived(m, "ft", 0.3048)
-inch = Unit.derived(m, "in", 0.0254)
+inch = Unit.derived(ft, "in", 1/12)
 thou = Unit.derived(inch, "thou", 1000)
 mi = Unit.derived(ft, "mi", 5280)
 
@@ -15,7 +15,7 @@ acre = Unit.derived(m**2, "acre", 4046.873)
 
 # volume
 ft3 = Unit.derived(m*m*m, "(ft³)", 0.02831685)
-in3 = Unit.derived(inch**3, "(in³)")
+inch3 = Unit.derived(inch**3, "(in³)")
 tsp = Unit.derived(mL, "tsp", 4.92892159375)
 Tbsp = Unit.derived(tsp, "Tbsp", 3)
 cup = Unit.derived(Tbsp, "cup", 16)
