@@ -420,6 +420,8 @@ TeVc2= tera(eVc2)
 kPa = kilo(Pa)
 MPa = mega(Pa)
 GPa = giga(Pa)
+mmHg = Unit.derived(Pa, "mmHg", 133.3224)
+atm = Unit.derived(Pa, "atm", 101325)
 
 kJ = kilo(J)
 MJ = mega(J)

@@ -4,13 +4,25 @@ quantipy gives your calculations:
 - effortless unit conversion
 - automatic commensurability enforcement
 
-see [here](./units.md) for a list of units and constants the package adds
+see [here](https://github.com/itsmiir/qpy/blob/main/units.md) for a list of units and constants the package adds
 
 ---
 ### what is quantipy?
 
 #### quantipy is a dimensional analysis module for engineering and physics calculations that allows you to manipulate physical quantities in an intutive way. it also enforces proper unit usage and prevents many unit errors.
 
+### why quantipy?
+there are several other python packages that provide support for quantities with units. here is a (non-exhaustive) list:
+- [astropy.units](https://docs.astropy.org/en/latest/units)
+- [DimPy](http://www.inference.org.uk/db410/)
+- [DUQ](https://github.com/AAriam/duq)
+- [Magnitude](https://juanreyero.com/open/magnitude/)
+- [numericalunits](https://github.com/sbyrnes321/numericalunits)
+- [Pint](https://pint.readthedocs.io/en/stable/index.html)
+- [Quantities](https://python-quantities.readthedocs.io/en/latest/index.html)
+- [Scalar](http://russp.us/scalar-guide.htm)
+
+these packages serve a variety of purposes, and all have their strengths and weaknesses. depending on your application, one of these might be better for you--but quantipy has certain features that sets it apart from each of these. In short, **quantipy is ideal as a calculator for quick napkin calculations involving physical quantities.**
 ### how does it work?
 
 here's a simple example-- let's say i want to find the the velocity of an object involved in an inelastic collision:
@@ -91,7 +103,7 @@ print(m1+m2)
 
 ArithmeticError: Incompatible units: kg and m/s
 ```
-this feature will solve a 
+this feature will solve a surprising amount of calculation errors.
 ### defining custom units
 you can even define your own custom constants with your own symbols and conversion factors and use them in your code!
 ```py
@@ -147,4 +159,4 @@ print((43*degF).termsOf(K), (16*degF).termsOf(degC))
 
 ### more information
 
-for a full list of units and constants added by quantipy, see [here](./units.md).
+for a full list of units and constants added by quantipy, see [here](https://github.com/itsmiir/qpy/blob/main/units.md).
