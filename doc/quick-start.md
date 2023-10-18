@@ -26,7 +26,7 @@ kg
 >>> power*hr
 36000.0 J
 ```
-you will see that quantipy automatically converts units to their most simple form. `kg*m/s = N*s`. we can do more with this. let's find out how much kinetic energy our mass has:
+you will see that quantipy automatically converts units to their most simple form; `kg*m/s = N*s`. we can do more with this. let's find out how much kinetic energy our mass has:
 ```py
 >>> KE = 1/2*m*v**2
 >>> KE
@@ -40,6 +40,13 @@ wow! 145.8 joules! that's pretty cool, but i live in the united states, and i wa
 you can pass any equivalent unit to this function. for example; the isochoric heat capacity of water:
 ```py
 >>> C_V = 4.157*kJ/kg/K
+# note that GEMS applies to units, too.
+# kJ/kg*K is the same as (kJ*K)/kg.
+# kJ/kg/K is the same as kJ/(kg*K).
+# when in doubt, you can always use
+# parentheses to be explicit about
+# which units are on the top and which
+# are on the bottom.
 >>> C_V.termsOf(Btu/lbm/R)
 '0.9928823986839923 Btu/lbm/R'
 ```
@@ -49,3 +56,6 @@ let's try to express it in other units:
 ArithmeticError: Incompatible units: Jkg⁻¹K⁻¹ and Jkg⁻¹
 ```
 whoa! we get an error because those units aren't the same. the same thing will happen if you try to add quantities with incompatible units.
+
+---
+for a full list of features, please see the [readme](../README.md).
