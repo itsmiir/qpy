@@ -21,7 +21,7 @@ now that we have some quantities, we can do all sorts of things with them.
 kg
 >>> mass * velocity
 54.0 Ns
->>> area**0.5
+>>> area.root(2) # computes the square root of area
 2.0542638584174138 m
 >>> power*hr
 36000.0 J
