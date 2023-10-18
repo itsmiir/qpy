@@ -623,7 +623,6 @@ def __simplify(unit, expU, units=units):
                 if d1 < d:
                     d = d1
                     closest[0] = i
-                    # print(i.name)
                     closest[1]=True
                     closest[2]=order
 
@@ -647,7 +646,6 @@ def __simplify(unit, expU, units=units):
         return simplifiedStr+ __simplify(newUnit, expU)
 
 def simplify(unit,expU=explicitUnits):
-    # print(unit)
     if type(unit) == Quantity:
         return str(unit.value)+" "+ simplify(unit.unit, expU)
     if len(unit.vec) == 0:
@@ -668,7 +666,6 @@ def simplify(unit,expU=explicitUnits):
             else:
                 units[u] = 1
     strn = ""
-    print(units)
     unitsSrt = sorted(units, key=lambda k: units[k]-1, reverse=False)
     for i in unitsSrt:
         if units[i] == 0:
