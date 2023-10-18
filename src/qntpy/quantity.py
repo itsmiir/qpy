@@ -1,40 +1,40 @@
-from math import pi
-import sys
-import json
-import os
+from math import pi as _pi
+import sys as _sys
+import json as _json
+import os as _os
 
-NATURAL_UNITS_MODE = "natural mode"
-__CONFIG = {
-    NATURAL_UNITS_MODE: False
+_NATURAL_UNITS_MODE = "natural mode"
+_CONFIG = {
+    _NATURAL_UNITS_MODE: False
 }
 
 def naturalUnits() -> bool:
-    return __CONFIG[NATURAL_UNITS_MODE]
+    return _CONFIG[_NATURAL_UNITS_MODE]
 
-sys.path.append(".")
+_sys.path.append(".")
 
-_directory = os.path.dirname(os.path.abspath(__file__))
+_directory = _os.path.dirname(_os.path.abspath(__file__))
 with open(_directory+"/config.json") as f:
-    __CONFIG = json.load(f)
+    _CONFIG = _json.load(f)
 
 def toggleNaturalMode():
     """this is an experimental setting that redefines every constant such that the speed of light is 1 (unitless).
     it's intentionally obtuse to use because i'm not quite sure that it works properly.
     """
     if (naturalUnits()):
-        __CONFIG[NATURAL_UNITS_MODE] = False
+        _CONFIG[_NATURAL_UNITS_MODE] = False
         print("natural units mode off! restart to apply!")
         with open(_directory+"/config.json", "w") as f:
-            f.write(json.dumps(__CONFIG))
+            f.write(_json.dumps(_CONFIG))
     else:
-        __CONFIG[NATURAL_UNITS_MODE] = True
+        _CONFIG[_NATURAL_UNITS_MODE] = True
         print("natural units mode on! the speed of light is 1!")
         print("this feature is highly experimental and will likely break some functionality!")
         print("restart to apply!")
         with open(_directory+"/config.json", "w") as f:
-            f.write(json.dumps(__CONFIG))
+            f.write(_json.dumps(_CONFIG))
 
-__superscripts = {
+_superscripts = {
     "0":"⁰",
     "1":"¹",
     "2":"²",
@@ -49,11 +49,11 @@ __superscripts = {
     "-":"⁻"
 }
 
-def toSuperscript(num):
+def _toSuperscript(num):
     n = str(num)
     newN = ""
     for i in n:
-        newN += __superscripts[i]
+        newN += _superscripts[i]
     return newN        
 
 class Unit(object):
@@ -88,7 +88,7 @@ class Unit(object):
             try:
                 return Quantity(other, self)
             except:
-                raise ArithmeticError
+                raise ArithmeticError()
         selfs = self.vec.copy()
         others = other.vec.copy()
         for k in others:
@@ -109,10 +109,28 @@ class Unit(object):
             unit.vec[i] *= other
         unit.factor = unit.factor**other
         return unit
-    
-    def root(value, root):
-        """computes (value)**(1/root)"""
-        pass
+
+    def pow(self, exp):
+        """computes self**exp"""
+        newUnit = _One
+        if exp != round(exp):
+            raise ArithmeticError("cannot take non-integer exponent "+str(exp)+" of physical dimensions!")
+        for u in self.vec:
+            newUnit.vec[u]=self.vec[u]*exp
+            newUnit.factor = self.factor**exp
+        return newUnit
+                
+    def root(self, root):
+        """computes (self)**(1/root)"""
+        newUnit = _One
+        if root != round(root):
+            raise ArithmeticError("cannot take non-integer root "+str(root)+" of physical dimensions!")
+        for u in self.vec:
+            if self.vec[u] % root is not 0:
+                raise ArithmeticError("cannot take root "+str(root)+" of unit "+str(self)+"!")
+            newUnit.vec[u]=self.vec[u]/root
+            newUnit.factor = self.factor**1/root
+        return newUnit
 
     def __neg__(self):
         return -1*self
@@ -136,7 +154,7 @@ class Unit(object):
         return self.factor / other.factor
         # return Unit({}, "", self.factor/other.factor)
     def __rtruediv__(self, other):
-        return One/self * other
+        return _One/self * other
 
     def __eq__(self, other):
         if type(other) == Unit and other.factor == self.factor:
@@ -146,25 +164,25 @@ class Unit(object):
         else:
             return len(self.vec) == 0 and other == self.factor
 
-    def getVecStr(self):
+    def _getVecStr(self):
         strin = ""
-        for k in sorted(self.vec, key=lambda k: self.vec[k], reverse=True):
+        for k in sorted(self.vec, key=lambda k: abs(self.vec[k]-1), reverse=True):
             if self.vec[k] == 0:
                 pass
             elif self.vec[k] != 1:
-                strin +=(k + toSuperscript(self.vec[k]))
+                strin +=(k + _toSuperscript(self.vec[k]))
             else:
                 strin +=(k)
         return strin
     def __str__(self):
-        if self.isBase():
-            return self.name
+        # if self._isBase():
+            # return self.name
         if self.factor != 1:
             return str(self.factor) + " "+ simplify(self)
         else:
             return simplify(self)
     
-    def isBase(self):
+    def _isBase(self):
         v = 0
         for u in self.vec:
             v += self.vec[u]
@@ -176,7 +194,7 @@ class Unit(object):
         return self.factor
     def __int__(self):
         return int(float(self))
-    def dotProduct(self, other):
+    def _dotProduct(self, other):
         k=0
         for i in self.vec:
             try:
@@ -184,7 +202,7 @@ class Unit(object):
             except KeyError as e:
                 pass
         return k
-    def orthogonal(self, other):
+    def _orthogonal(self, other):
         for i in self.vec:
             try:
                 if not self.vec[i]*other.vec[i] == 0:
@@ -208,7 +226,7 @@ class Quantity(object):
                 self.unit = unit.copy()
                 self.value = (value*self.unit.factor)+self.unit.offset
             except AttributeError:
-                self.unit = One
+                self.unit = _One
                 self.value = value
             self.unit.factor = 1
             self.unit.offset = 0
@@ -222,7 +240,7 @@ class Quantity(object):
                 raise ArithmeticError("Incompatible units: "+ simplify(self.unit)+ " and "+ simplify(other.unit))
             return Quantity(self.value+other.value, self.unit)
         else:
-            if self.unit == One:
+            if self.unit == _One:
                 return self.value + other
             elif other == 0:
                 return self
@@ -257,7 +275,7 @@ class Quantity(object):
         else:
             return Quantity(self.value/other, self.unit)
     def __rtruediv__(self, other):
-        return (One/self) * other
+        return (_One/self) * other
 
     def __round__(self, i):
         return Quantity(round(self.value, i), self.unit)
@@ -282,7 +300,7 @@ class Quantity(object):
             return self == Quantity(1, other)
         elif type(other) == Quantity:
             return other.value == self.value and other.unit == self.unit
-        elif self.unit == One:
+        elif self.unit == _One:
             return self.value == other
         else:
             return False
@@ -300,7 +318,21 @@ class Quantity(object):
     def __pos__(self):
         return self
     def __pow__(self, other):
-        return Quantity(self.value**other, self.unit**other)
+        if round(other) == other:
+            return self.pow(other)
+        else:
+            if round(1/other) == 1/other:
+                return self.root(1/other)
+        raise ArithmeticError("cannot compute "+str(self.unit)+" to the nth power!")
+    
+    def pow(self, exp):
+        """computes self**exp"""
+        return Quantity(self.value**exp, self.unit.pow(exp))
+                
+    def root(self, root):
+        """computes (self)**(1/root)"""
+        return Quantity(self.value**(1/root), self.unit.root(root))
+
     def termsOf(self, other,rnd: int=-1)->str:
         if type(other) == Unit:
             if (other.offset != 0):
@@ -352,11 +384,11 @@ cd = Unit({"cd": 1}, "cd")
 mol = 6.02214076e23
 
 # unit definitions: derived
-One = Unit({},"") # unitless unit; for 1/<unit>
-rad = One # just for readability
-pct = Unit.derived(One, "%", .01)
+_One = Unit({},"") # unitless unit; for 1/<unit>
+rad = _One # just for readability
+pct = Unit.derived(_One, "%", .01)
 
-Hz = Unit.derived(One/s, "Hz")
+Hz = Unit.derived(_One/s, "Hz")
 N = Unit.derived(kg*m/s/s, "N")
 Pa = Unit.derived(N/m/m, "Pa")
 J = Unit.derived(N*m, "J")
@@ -369,12 +401,12 @@ C = Unit.derived(s*A, "C")
 V = Unit.derived(W/A, "V")
 F = Unit.derived(C/V, "F")
 ohm = Unit.derived(V/A, "Ω")
-S = Unit.derived(One/ohm, "S")
+S = Unit.derived(_One/ohm, "S")
 Wb = Unit.derived(V*s, "Wb")
 T = Unit.derived(Wb/m/m, "T")
 H = Unit.derived(Wb/A, "H")
 if naturalUnits():
-    Sv = One
+    Sv = _One
 else:
     Sv = Unit.derived(J/kg, "Sv")
 # non-standard derived units: baseUnit = derivedUnit*factor + offset
@@ -447,7 +479,7 @@ km = kilo(m)
 Gm = giga(m)
 Mm = mega(m)
 au = Unit.derived(m, "au", 149597870700)
-pc = Unit.derived(au, "pc", 648000/pi)
+pc = Unit.derived(au, "pc", 648000/_pi)
 ly = Unit.derived(m, "ly", 9460730472580800)
 
 m2 = Unit.derived(m*m, "(m²)")
@@ -482,6 +514,7 @@ g = Unit.derived(kg, "g", 0.001)
 mg = milli(g)
 ug = micro(g)
 ng = nano(g)
+Da = Unit.derived(kg, "Da", 1.66053906660e-27)
 
 
 # units that printed answers can be expressed in
@@ -555,14 +588,14 @@ def __simplify(unit, expU, units=units):
         return Hz.name
     for i in expU:
         if unit == i:
-            return unit.getVecStr()
+            return unit._getVecStr()
     d = getDistance(unit, units[0])
     closest = [units[0], False, 1]
     for i in units:
         order = 1
         goAgain = False
-        if not unit.orthogonal(i):
-            if unit.dotProduct(i) > 0:
+        if not unit._orthogonal(i):
+            if unit._dotProduct(i) > 0:
                 d1 = getDistance(unit, i)
                 d2 = d1 - 1
                 while d2 < d1 or goAgain:
@@ -578,11 +611,11 @@ def __simplify(unit, expU, units=units):
                     closest[1]=False
                     closest[2]=order
             else:
-                d1 = getDistance(unit, One/i)
+                d1 = getDistance(unit, _One/i)
                 d2 = d1 -1
                 while d2 < d1 or goAgain:
                     goAgain = False
-                    d2 = getDistance(unit, One/(i**(order+1)))
+                    d2 = getDistance(unit, _One/(i**(order+1)))
                     if d2 < d1:
                         order+=1
                         d1 = d2
@@ -602,36 +635,16 @@ def __simplify(unit, expU, units=units):
     if exponent != 1 or expIsNegative:
         if expIsNegative:
             exponentStr += "⁻";
-        exponentStr += toSuperscript(exponent)
+        exponentStr += _toSuperscript(exponent)
     simplifiedStr = closestUnit.name + exponentStr
     if expIsNegative:
         newUnit = unit*(closestUnit**exponent)
     else:
         newUnit = unit/(closestUnit**exponent)
-    if newUnit == One:
+    if newUnit == _One:
         return simplifiedStr
     else:
         return simplifiedStr+ __simplify(newUnit, expU)
-    # if (closest[2])==0:
-    #       return closest[0].name
-    # else:
-    #     name = closest[0].name
-    # if d == 0:
-    #     s=""
-    #     if closest[1]:
-    #         s = "⁻"
-    #     u = s+name
-    #     for i in range(closest[2]-1):
-    #         u+= " "
-    #         u+= (s+name)
-    #     return u
-    # if closest[1]:
-    #     return (str(closest[0].name)+s)+ __simplify(unit*(closest[0]**closest[2]), expU)
-    # if closest[2] == 1:
-    #     s = ""
-    # else:
-    #     s = toSuperscript(closest[2])
-    # return (str(closest[0].name)+s)+ __simplify(unit/(closest[0]**closest[2]), expU)
 
 def simplify(unit,expU=explicitUnits):
     # print(unit)
@@ -655,14 +668,15 @@ def simplify(unit,expU=explicitUnits):
             else:
                 units[u] = 1
     strn = ""
-    unitsSrt = sorted(units, key=lambda k: units[k], reverse=True)
+    print(units)
+    unitsSrt = sorted(units, key=lambda k: units[k]-1, reverse=False)
     for i in unitsSrt:
         if units[i] == 0:
             pass
         if units[i] == 1:
             strn+=i
         else:
-            strn+=(i+toSuperscript(units[i]))
+            strn+=(i+_toSuperscript(units[i]))
     return strn
 
 
@@ -685,4 +699,5 @@ if __name__ == '__main__':
     assert (1000 - km/m) == (m/(2*m) - 1/2) == 0
     assert ((N*s**2/m**4) == kg/m3) 
     print((100*K).termsOf(degC))
+    print(10*(W**5/V**5*s**5).root(5))
     print("all tests passed")

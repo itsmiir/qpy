@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "qntpy"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   { name="miir", email="itsmiir@outlook.com" },
 ]

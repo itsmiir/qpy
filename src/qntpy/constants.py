@@ -11,7 +11,7 @@ sigma_sb = (2*pi**5*k**4)/(15*c**2*h**3)
 g_earth = 9.80665*m/s/s # avg surface gravity on earth
 
 mu_0 = 1.25663706212e-6*N/A/A # vacuum magnetic permeability
-e_0 = One/(mu_0*c**2) # vacuum electric permittivity
+e_0 = _One/(mu_0*c**2) # vacuum electric permittivity
 k_e = 8.9875517923e9*N*m2/C**2
 
 m_e = 9.1093837015e-31*kg # electron mass
