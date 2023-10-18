@@ -1,10 +1,10 @@
 this list contains almost every currently usable unit and constant in the package. 
 
-looking for a unit that isn't here? remember, you can [define your own](./README.md#defining-custom-units)!
+looking for a unit that isn't here? you can [define your own](./README.md#defining-custom-units)!
 
 Variable Name | Commensurability | Description
 --- | --- | ---
----|**SI Base Units**|---
+**SI Base Units**|---|---
 `m` | length | the SI unit meter
 `s` | time | the SI unit second
 `kg`|mass|the SI unit kilogram
@@ -12,7 +12,7 @@ Variable Name | Commensurability | Description
 `K`|temperature|the SI unit kelvin
 `A`|electric current|the SI unit ampere
 `mol`|unitless|$6.02214076\times10^{23}{}$
----|**SI Derived Units**|---
+**SI Derived Units**|---|---
 `Hz`|regular frequency|the SI unit hertz
 `N`|force|the SI unit newton
 `Pa`|pressure|the SI unit pascal
@@ -27,8 +27,8 @@ Variable Name | Commensurability | Description
 `T`|magnetic flux density|the SI unit tesla
 `H`|inductance|the SI unit henry
 `Sv`|radiation dosage (J/kg)|the SI unit sievert
----|**Misc. Derived Units**|---
-`nm,um,mm,cm,km,Gm,Mm`|length|nano,micro,milli,centi,kilo,giga,megameter
+**Misc. Derived Units**|---|---
+`nm,um,mm,cm,km,Gm,Mm`|length|nano, micro, milli,centi, kilo, giga, megameter
 `au`|length|astronomical unit
 `pc`|length|parsec
 `ly`|length|lightyear
@@ -53,7 +53,7 @@ Variable Name | Commensurability | Description
 `pint`|volume|$2\space cup$
 `quart`|volume|$2\space pint$
 `gal`|volume|$4\space quart$
-`ms, us, ns, ps`|time|milli, micro, nano,picosecond
+`ms, us, ns, ps`|time|milli, micro, nano, picosecond
 `minute`|time|$60\space s$
 `hr`|time|$60\space minute$
 `day`|time|$24\space hr$
@@ -61,43 +61,43 @@ Variable Name | Commensurability | Description
 `yr`|time|$365.25\space day$
 `My`|time|$10^6\space yr$
 `aeon`|time|$10^9\space yr$
-`kJ,MJ,GJ`|energy|kilo,mega,gigajoule
+`kJ,MJ,GJ`|energy|kilo, mega, gigajoule
 `Wh`|energy|watt*hr
-`kWh,MWh,GWh,TWh`|energy|kilo,mega,giga.terawatthour
+`kWh,MWh,GWh,TWh`|energy|kilo, mega, giga, terawatthour
 `cal`|energy|the small calorie, $4.184 J$
 `kcal`|energy|the large Calorie, $4184 J$
 `Btu`|energy|British thermal unit, $1055.056\space J$
 `eV`|energy|the electron-volt, $1.602176634\times10^{-19}\space J$
-`keV,MeV,GeV,TeV`|energy|kilo,mega,giga,teraelectronvolt
-`mW,kW,MW,GW,TW`|power|milli,kilo,mega,giga,terawatt
+`keV,MeV,GeV,TeV`|energy|kilo, mega, giga, teraelectronvolt
+`mW,kW,MW,GW,TW`|power|milli, kilo, mega, giga, terawatt
 `hp`|energy|horsepower, $745.7\space W$
-`kN,MN,GN`|force|kilo,mega,giganewton
+`kN,MN,GN`|force|kilo, mega, giganewton
 `lbf`|force|poundforce, $4.448222\space N$
 `lbm`|mass|poundmass, $0.4535924\space kg$
 `ton`|mass|ton, $2000\space lbm$
 `slug`|mass|slug, $1\frac{lbf\space s^2}{ft}{}$
-`ng,ug,mg,g`|mass|nano,micro,milli,gram
+`ng,ug,mg,g`|mass|nano, micro, milli, gram
 `eVc2`|mass|electron-volt divided by the speed of light squared, $1.78266192\times10^{-36}\space kg$
-`keVc2,MeVc2,GeVc2,TeVc2`|mass|kilo,mega,giga,teraelectronvolt/c2
-`mA,kA`|electric current|milli,kiloamp
-`mV,kV`|electric potential|milli,kilovolt
-`pF,nF,uF,mF`|capacitance|pico,nano,micro,millifarad
-`nH,uH,mH`|inductance|nano,micro,millihenry
-`kohm,Mohm,Gohm`|resistance|kilo,mega,gigaohm
-`kHz,MHz,GHz,THz`|regular frequency|kilo,mega,giga,terahertz
-`kPa,MPa,GPa`|pressure|kilo,mega,gigapascal
+`keVc2,MeVc2,GeVc2,TeVc2`|mass|kilo, mega, giga, teraelectronvolt/c2
+`mA,kA`|electric current|milli, kiloamp
+`mV,kV`|electric potential|milli, kilovolt
+`pF,nF,uF,mF`|capacitance|pico, nano, micro, millifarad
+`nH,uH,mH`|inductance|nano, micro, millihenry
+`kohm,Mohm,Gohm`|resistance|kilo, mega, gigaohm
+`kHz,MHz,GHz,THz`|regular frequency|kilo, mega, giga, terahertz
+`kPa,MPa,GPa`|pressure|kilo, mega, gigapascal
 `psi`|pressure|$1\frac{lbf}{inch^2}{}$
-`ksi, Mpsi`|pressure|kilo,megapsi
+`ksi, Mpsi`|pressure|kilo, megapsi
 `deg`|unitless|one angular degree
 `R`|temperature|the Rankine scale
 `degC`|temperature|degrees Celsius ([non-absolute unit](./README.md#non-absolute-units))
 `degF`|temperature|degrees Fahrenheit ([non-absolute unit](./README.md#non-absolute-units))
----|**Other Units**|---
+**Other Units**|---|---
 `bit`|information|information equal to one boolean value
 `nybble`|information|$4 \space b$
 `byte`|information|$8\space b$
-`kB,MB,GB,TB,PB,EB`|information|kilo,mega,giga,tera,peta,exabyte (scaling by $1000$)
-`kiB,MiB,GiB,TiB,PiB,EiB`|information|kibi,mebi,gibi,tebi,pebi,exibyte (scaling by $1024$)
+`kB,MB,GB,TB,PB,EB`|information|kilo, mega, giga, tera, peta, exabyte (scaling by $1000$)
+`kiB,MiB,GiB,TiB,PiB,EiB`|information|kibi, mebi, gibi, tebi, pebi, exibyte (scaling by $1024$)
 
 by importing `qntpy.constants`, you can also access several physics and engineering constants:
 
