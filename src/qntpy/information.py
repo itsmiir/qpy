@@ -14,7 +14,7 @@ PB = peta(byte)
 EB = Unit.derived(TB, "EB", 1000)
 
 KiB = Unit.derived(byte,"KiB", 1024)
-MiB = Unit.derived(KiB, "KiB", 1024)
+MiB = Unit.derived(KiB, "MiB", 1024)
 GiB = Unit.derived(MiB, "GiB", 1024)
 TiB = Unit.derived(GiB, "TiB", 1024)
 PiB = Unit.derived(TiB, "PiB", 1024)

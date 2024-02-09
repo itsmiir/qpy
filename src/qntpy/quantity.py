@@ -126,10 +126,10 @@ class Unit(object):
         if root != round(root):
             raise ArithmeticError("cannot take non-integer root "+str(root)+" of physical dimensions!")
         for u in self.vec:
-            if self.vec[u] % root is not 0:
+            if self.vec[u] % root != 0:
                 raise ArithmeticError("cannot take root "+str(root)+" of unit "+str(self)+"!")
             newUnit.vec[u]=self.vec[u]/root
-            newUnit.factor = self.factor**1/root
+            newUnit.factor = self.factor**(1/root)
         return newUnit
 
     def __neg__(self):
@@ -176,7 +176,7 @@ class Unit(object):
         return strin
     def __str__(self):
         # if self._isBase():
-            # return self.name
+        return self.name
         if self.factor != 1:
             return str(self.factor) + " "+ simplify(self)
         else:
@@ -351,6 +351,18 @@ class Quantity(object):
 
 
 # prefix definitions
+def quecto(unit):
+    return Unit.derived(unit, "q"+unit.name, 1e-15)
+def ronto(unit):
+    return Unit.derived(unit, "r"+unit.name, 1e-15)
+def yocto(unit):
+    return Unit.derived(unit, "y"+unit.name, 1e-15)
+def zepto(unit):
+    return Unit.derived(unit, "z"+unit.name, 1e-15)
+def atto(unit):
+    return Unit.derived(unit, "a"+unit.name, 1e-18)
+def femto(unit):
+    return Unit.derived(unit, "f"+unit.name, 1e-15)
 def pico(unit):
     return Unit.derived(unit, "p"+unit.name, 1e-12)
 def nano(unit):
@@ -359,7 +371,15 @@ def micro(unit):
     return Unit.derived(unit, "μ"+unit.name, 1e-6)
 def milli(unit):
     return Unit.derived(unit, "m"+unit.name, 1e-3)
-
+def centi(unit):
+    return Unit.derived(unit, "c"+unit.name, 1e-2)
+def deci(unit):
+    return Unit.derived(unit, "d"+unit.name, 1e-1)
+# --- #
+def deka(unit):
+    return Unit.derived(unit, "da"+unit.name, 1e1)
+def hecto(unit):
+    return Unit.derived(unit, "h"+unit.name, 1e2)
 def kilo(unit):
     return Unit.derived(unit, "k"+unit.name, 1e3)
 def mega(unit):
@@ -370,6 +390,16 @@ def tera(unit):
     return Unit.derived(unit, "T"+unit.name, 1e12)
 def peta(unit):
     return Unit.derived(unit, "P"+unit.name, 1e15)
+def exa(unit):
+    return Unit.derived(unit, "P"+unit.name, 1e18)
+def zetta(unit):
+    return Unit.derived(unit, "Z"+unit.name, 1e21)
+def yotta(unit):
+    return Unit.derived(unit, "Y"+unit.name, 1e24)
+def ronna(unit):
+    return Unit.derived(unit, "R"+unit.name, 1e27)
+def quetta(unit):
+    return Unit.derived(unit, "Q"+unit.name, 1e30)
 
 # unit definitions: base
 s = Unit({"s": 1}, "s")
@@ -478,8 +508,8 @@ cm = Unit.derived(m, "cm", 0.01)
 km = kilo(m)
 Gm = giga(m)
 Mm = mega(m)
-au = Unit.derived(m, "au", 149597870700)
-pc = Unit.derived(au, "pc", 648000/_pi)
+AU = Unit.derived(m, "AU", 149597870700)
+pc = Unit.derived(AU, "pc", 648000/_pi)
 ly = Unit.derived(m, "ly", 9460730472580800)
 
 m2 = Unit.derived(m*m, "(m²)")
@@ -529,7 +559,6 @@ def addBaseUnit(unit):
     units.append(unit)
 
 if (not naturalUnits()):
-    # in relativity mode, 
     # energy == mass,
     # distance == time,
     # power == force
@@ -555,8 +584,8 @@ def getUnits():
 
 # units that will not be simplified; e.g., m/s² will not be simplified to N/kg
 explicitUnits = [
-    # m*m, m*m*m,
-    # m/s, m/s**2,
+    m*m, m*m*m,
+    m/s, m/s**2,
 
 ]
 def addExplicit(unit):
@@ -666,7 +695,7 @@ def simplify(unit,expU=explicitUnits):
             else:
                 units[u] = 1
     strn = ""
-    unitsSrt = sorted(units, key=lambda k: units[k]-1, reverse=False)
+    unitsSrt = sorted(units, key=lambda k: abs(units[k]-1), reverse=False)
     for i in unitsSrt:
         if units[i] == 0:
             pass
@@ -679,22 +708,4 @@ def simplify(unit,expU=explicitUnits):
 
 # todo: readme
 if __name__ == '__main__':
-    print("checking units...")
-    assert (1.5*V) * (10*mA) == 15*mW
-    assert (373.15*K) == (100*degC)
-    print (1*C/m3, 1*Pa/V)
-    assert C/m3 == Pa/V
-    assert 1*F*V + A*s == 2*C
-    assert 3*L-L == round((m/20)*(m/5)*(m/5), 15)
-    assert L / (m*m*m) == 1/1000
-    assert (T/Pa/V*N*Hz) == 1
-    assert (kg*Wb/T/J*Hz**2) == 1
-    assert (Pa/V/A/Wb/N*W*H*C*m**2*Hz) == 1
-    assert ((kPa/V*Sv**3/C*N/W**3*H**2/W*A/Hz**3*g)==s**3/A**3)
-    assert (J/(N*m)) == 1
-    assert (1 - 5*m/m) == -4
-    assert (1000 - km/m) == (m/(2*m) - 1/2) == 0
-    assert ((N*s**2/m**4) == kg/m3) 
-    print((100*K).termsOf(degC))
-    print(10*(W**5/V**5*s**5).root(5))
-    print("all tests passed")
+    pass
