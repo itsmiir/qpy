@@ -170,3 +170,15 @@ print(cncy.BTC.termsOf(cncy.EUR))
 ### more information
 
 for a full list of units and constants added by quantipy, see [here](https://github.com/itsmiir/qpy/blob/main/doc/units.md).
+
+### appendix: package structure
+
+
+`qntpy`: top-level package.
+- `compat`: compatibility with other scientific computing systems.
+- `constants`: helpful constants from a variety of disciplines
+- `core`: core functionality.
+- `currency`: currency units.
+- `info`: information and data.
+- `repr`: code for displaying and formatting values.
+- `util`: helper code and miscellaneous functions.
