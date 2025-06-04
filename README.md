@@ -52,8 +52,7 @@ current = 3*A
 length = 2*cm
 turns = 5000
 area = 100*mm**2
-# use pow(n) and root(n) to raise a unit or quantity to the nth power or the nth root respectively--floating point error sometimes causes problems with the python ** operator, especially for root calculations
-force = (turns*current).pow(2) * mu_0 * area / (2*(length**2))
+force = (turns*current)**2 * mu_0 * area / (2*(length**2))
 print(force.round(4))
 # 35.3429 N
 print((m_1*g_earth).round(4))

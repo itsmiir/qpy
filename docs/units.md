@@ -1,6 +1,6 @@
 this list contains almost every currently usable unit and constant in the package. 
 
-looking for a unit that isn't here? you can [define your own](./README.md#defining-custom-units)!
+looking for a unit that isn't here? you can [define your own](../README.md#defining-custom-units)!
 
 Variable Name | Commensurability | Description
 --- | --- | ---
@@ -90,8 +90,8 @@ Variable Name | Commensurability | Description
 `ksi, Mpsi`|pressure|kilo, megapsi
 `deg`|unitless|one angular degree
 `R`|temperature|the Rankine scale
-`degC`|temperature|degrees Celsius ([non-absolute unit](./README.md#non-absolute-units))
-`degF`|temperature|degrees Fahrenheit ([non-absolute unit](./README.md#non-absolute-units))
+`degC`|temperature|degrees Celsius ([non-absolute unit](../README.md#non-absolute-units))
+`degF`|temperature|degrees Fahrenheit ([non-absolute unit](../README.md#non-absolute-units))
 **Other Units**|---|---
 `bit`|information|information equal to one boolean value
 `nybble`|information|$4 \space b$
