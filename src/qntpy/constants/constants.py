@@ -1,5 +1,5 @@
-from qntpy.core.quantity import Quantity
 from qntpy.core.units import *
+from qntpy.core.quantity import Quantity
 
 # SI defining constants
 delta_v_Cs = 9192631770 * Hz
@@ -10,23 +10,23 @@ k = 1.380649e-23 * J/K
 N_A = 6.02214076e23 / mol
 K_cd = 683 * lm/W
 
-G = Quantity(6.67430e-11, N*m2/kg**2) # gravitational constant
+G = 6.67430e-11 * N*m*m/kg**2 # gravitational constant
 
-g_earth = Quantity(9.80665, m/s/s) # avg surface gravity on earth
+g_earth = 9.80665 * m/s/s # avg surface gravity on earth
 
-mu_0 = Quantity(1.25663706212e-6, N/A/A) # vacuum magnetic permeability
+mu_0 = 1.25663706212e-6 * N/A/A # vacuum magnetic permeability
 e_0 = One/(mu_0*c**2) # vacuum electric permittivity
-k_e = Quantity(8.9875517923e9, N*m2/C**2)
+k_e = 8.9875517923e9 * N*m*m/C**2
 
-m_e = Quantity(9.1093837015e-31, kg) # electron mass
-m_p = Quantity(1.67262192369e-27, kg) # proton mass
-m_n = Quantity(1.67492749804e-27, kg) # neutron mass
+m_e = 9.1093837015e-31 * kg # electron mass
+m_p = 1.67262192369e-27 * kg # proton mass
+m_n = 1.67492749804e-27 * kg # neutron mass
 
 # planck units
-l_planck = Quantity(1.616255e-35, m)
-m_planck = Quantity(2.176434e-8, kg)
-t_planck = Quantity(5.391247e-44, s)
-T_planck = Quantity(1.416784e+32, K)
+l_planck = 1.616255e-35 * m
+m_planck = 2.176434e-8 * kg
+t_planck = 5.391247e-44 * s
+T_planck = 1.416784e+32 * K
 E_planck = m_planck*c**2
 
 def help():

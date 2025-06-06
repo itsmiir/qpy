@@ -1,15 +1,17 @@
-"""Contains logic for Units, the basis of physical calculation.
-"""
+"""Contains logic for Units, the basis of physical calculation."""
 from __future__ import annotations
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal
 
-if TYPE_CHECKING:
-    from qntpy.core.quantity import Quantity
+from copy import deepcopy
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Any
+
+from qntpy.core import defs
 from qntpy.core.dimension import DimVec, Dim
 from qntpy.rep import rep
 
-class Unit(object):
+from qntpy.core.quantity import Quantity
+
+class Unit:
     """Represents a physical unit.
     
     The easiest way to create a new unit is to multiply some base units together. For example, a
@@ -28,11 +30,23 @@ class Unit(object):
     `Unit.derived` is usually simpler and cleaner.
     
     """
+    def __new__(cls, 
+                vec: DimVec[Dim, int], 
+                symbol: str, 
+                factor: float=1, 
+                offset: float=0,
+                prefix: int=0,
+                ):
+        if vec.is_empty():
+            return factor
+        else:
+            return super().__new__(cls)
     def __init__(self, 
                  vec: DimVec[Dim, int], 
-                 symbol: str, 
+                 symbol: str | None=None, 
                  factor: float=1, 
                  offset: float=0,
+                 prefix: int=0,
                  ) -> Unit:
         """Create a new unit, and return it. 
         
@@ -76,15 +90,34 @@ class Unit(object):
         - offset: 0 * the new unit = `offset` * `base_unit`.
         """
         self.vec = vec.copy()
-        for i in vec:
-            if vec[i] == 0:
-                del self.vec[i]
-        self.symbol = symbol
+        self._symbol = symbol
         self.factor = factor
         self.offset = offset
+        self.prefix = prefix
+
+
+    @property
+    def symbol(self):
+        if self._symbol is None:
+            from qntpy.rep.simplify import simplify
+            self._symbol = simplify(self)
+        if rep.exponent_to_abbrev(self.prefix, self.is_kg()) == '':
+            return self._symbol
+        else:
+            if len(self._symbol) <= 1:
+                return f'{rep.exponent_to_abbrev(self.prefix, self.is_kg())}{self._symbol}'
+            else:
+                return f'{rep.exponent_to_abbrev(self.prefix, self.is_kg())}({self._symbol})'
+    
+    @symbol.setter
+    def set_symbol(self):
+        return NotImplementedError('Unit symbols cannot be manually modified!')
+
+    def as_quantity(self) -> Quantity:
+        return Quantity(1, self, bypass_checks=True)
 
     @staticmethod
-    def derived(base_unit: Unit, symbol: str, factor:float=1, offset:float=0) -> Unit:
+    def derived(base_unit: Unit, symbol: str=None, factor:float=1, offset:float=0) -> Unit:
         """Create a new derived unit, and return it.
         
         The new unit has the symbol `symbol`, is equal to `factor * base_unit`, and
@@ -96,13 +129,20 @@ class Unit(object):
         - factor: [`float`] One of the new unit is equal to `factor` * `base_unit`.
         - offset: [`float`] 0 * the new unit = `offset` * `base_unit`.
         """
-        new_unit = deepcopy(base_unit)
-        new_unit.factor = base_unit.factor*factor
-        new_unit.offset = base_unit.offset+offset
-        new_unit.symbol = symbol
+        new_unit = base_unit.copy()
+        if isinstance(base_unit, Quantity):
+            new_unit.factor = base_unit.unit.factor*factor
+            new_unit.offset = base_unit.unit.offset+offset
+            new_unit.prefix = base_unit.unit.prefix
+        else:
+            new_unit.factor = base_unit.factor*factor
+            new_unit.offset = base_unit.offset+offset
+            new_unit.prefix = base_unit.prefix
+        new_unit._symbol = symbol
         return new_unit
 
-    def __mul__(self, other: Any) -> Unit | Quantity:
+    def __mul__(self, other: Any) -> Unit | 'Quantity':
+        from qntpy.core.quantity import Quantity
         if type(other) != Unit:
             try:
                 return Quantity(other, self)
@@ -115,24 +155,23 @@ class Unit(object):
                 selfs[k] = others[k] + selfs[k]
             else:
                 selfs[k] = others[k]
-        for k in selfs:
-            if not selfs[k] == 0:
-                return Unit(selfs, rep.concat_symbols(self.symbol, other.symbol, rep.Op.MUL), self.factor*other.factor)
-        return self.factor * other.factor
-    def __rmul__(self, other: Any) -> Unit | Quantity:
+        return Unit(selfs, None, self.factor*other.factor, 0, self.prefix+other.prefix)
+    def __rmul__(self, other: Any) -> Unit | 'Quantity':
         return self * other
 
     def __pow__(self, other: float) -> Unit:
-        unit = deepcopy(self)
+        unit = self.copy()
         for i in unit.vec:
             unit.vec[i] *= other
         unit.factor = unit.factor**other
+        unit._symbol = None
         return unit
     def __neg__(self) -> Unit:
         return -1*self
     def __pos__(self) -> Unit:
         return self
-    def __truediv__(self, other: Any) -> Unit | Quantity:
+    def __truediv__(self, other: Any) -> Any:
+        from qntpy.core.quantity import Quantity
         if type(other) == Quantity:
             return Quantity(self.factor, self)/other
         elif type(other) != Unit:
@@ -144,30 +183,54 @@ class Unit(object):
                 selfs[k] = -others[k] + selfs[k]
             else:
                 selfs[k] = -others[k]
-        for k in selfs:
-            if not selfs[k] == 0:
-                return Unit(selfs,self.symbol+"/"+other.symbol, self.factor/other.factor)
-        return self.factor / other.factor
-        # return Unit({}, "", self.factor/other.factor)
+        return Unit(selfs,None, self.factor/other.factor, prefix=self.prefix - other.prefix)
     def __rtruediv__(self, other: Any) -> Unit | Quantity:
-        return One/self * other
+        return self.invert() * other
 
+    def invert(self) -> Unit:
+        new_dimvec = self.vec.copy().invert()
+        new_factor = 1 / self.factor
+        new_prefix = -self.prefix
+        if self.is_kg():
+            new_prefix = self.prefix
+        return Unit(vec=new_dimvec, symbol=None, factor=new_factor, prefix=new_prefix)
+        
     def __eq__(self, other: Any) -> bool:
-        if type(other) == Unit and other.factor == self.factor:
-            return self / other == 1
-        if self.factor != 1 or self.offset != 0:
-            return 1*self == other
-        else:
-            return len(self.vec) == 0 and other == self.factor
+        return isinstance(other, Unit) and self.offset == other.offset and self.factor == other.factor and self.vec == other.vec
 
     def __str__(self) -> str:
+        if self.factor != 1:
+            return str(self.factor) + ' ' + self.symbol
+        else:
+            return self.symbol
+        # from qntpy.rep.simplify import simplify
+        # return simplify(self)
         
+        # strin = ""
+        # for k in self.vec:#sorted(self.vec):
+        #     if self.vec[k] == 0:
+        #         pass
+        #     elif self.vec[k] != 1:
+        #         strin +=(str(k) + rep.to_superscript(self.vec[k]))
+        #     else:
+        #         strin +=str(k)
+        
+        display_value = self.factor*10**(-self.prefix)
+        
+        if display_value != 1 or self.prefix != 0 or self.is_kg():
+            return f"{str(display_value)+' ' if display_value != 1 else ''}{rep.exponent_to_abbrev(self.prefix, self.is_kg())}{strin}"
+        else:
+            return strin
+    
+    def is_kg(self) -> bool:
+        return self.vec == DimVec({Dim.M: 1})
+    
     def __repr__(self) -> str:
         return str(self)
     def __float__(self) -> float:
-        return self.factor
+        return float(self.factor)
     def __int__(self) -> int:
-        return int(float(self))
+        return int(self.factor)
     def _dot_product(self, other: Unit) -> int:
         k=0
         for i in self.vec:
@@ -184,28 +247,13 @@ class Unit(object):
             except KeyError as e:
                 pass
         return True
-    def terms_of(self, other: Unit | Quantity, rnd: int=-1) -> str:
-        return (1*self).terms_of(other, rnd)
     
-    
-    # prefix definitions
-    @staticmethod
-    def pico(unit: Unit):
-        return Unit.derived(unit, "p"+unit.abbrev, 1e-12)
-    def nano(unit):
-        return Unit.derived(unit, "n"+unit.abbrev, 1e-9)
-    def micro(unit):
-        return Unit.derived(unit, "μ"+unit.abbrev, 1e-6)
-    def milli(unit):
-        return Unit.derived(unit, "m"+unit.abbrev, 1e-3)
+    def with_prefix(self, new_prefix: int) -> Unit:
+        return Unit(self.vec.copy(), self._symbol, self.factor*(10**new_prefix), self.offset, self.prefix + new_prefix)
 
-    def kilo(unit):
-        return Unit.derived(unit, "k"+unit.abbrev, 1e3)
-    def mega(unit):
-        return Unit.derived(unit, "M"+unit.abbrev, 1e6)
-    def giga(unit):
-        return Unit.derived(unit, "G"+unit.abbrev, 1e9)
-    def tera(unit):
-        return Unit.derived(unit, "T"+unit.abbrev, 1e12)
-    def peta(unit):
-        return Unit.derived(unit, "P"+unit.abbrev, 1e15)
+    def copy(self) -> Unit:
+        return Unit(self.vec.copy(), self._symbol, self.factor, self.offset, self.prefix)
+    
+    
+
+defs.Unit = Unit

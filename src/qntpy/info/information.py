@@ -1,15 +1,17 @@
 from qntpy.core.quantity import *
+from qntpy.core import units
+from qntpy.core.unit import Unit
 
 bit = Unit({"b": 1}, "b")
 nybble = Unit.derived(bit, "nybble", 4)
 byte = Unit.derived(bit, "B", 8)
 
-add_base_unit(bit)
+# add_base_unit(bit)
 
-kB = kilo(byte)
-MB = mega(byte)
-GB = giga(byte)
-TB = tera(byte)
+kB = units.kilo(byte)
+MB = units.mega(byte)
+GB = units.giga(byte)
+TB = units.tera(byte)
 PB = Unit.derived(TB, "PB", 1000)
 EB = Unit.derived(TB, "EB", 1000)
 

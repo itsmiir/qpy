@@ -9,8 +9,3 @@ any number. A physical quantity is made up of two parts:
    of units in `qntpy` is according to the International System of Units (SI),
    although non-SI units and quantities are included in qntpy.
 """
-
-from .core.quantity import *
-from .constants import *
-from .info.information import *
-from .constants.us import *
