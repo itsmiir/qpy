@@ -1,26 +1,24 @@
-from qntpy.core.quantity import *
-from qntpy.core import units
 from qntpy.core.unit import Unit
+from qntpy.core.dimension import Dim, DimVec
 
-bit = Unit({"b": 1}, "b")
-nybble = Unit.derived(bit, "nybble", 4)
-byte = Unit.derived(bit, "B", 8)
+bit = Unit(DimVec({}))# Unit({"b": 1}, "b")
+nybble = 4 * bit # Unit.derived(bit, "nybble", 4)
+byte = 8 * bit # Unit.derived(bit, "B", 8)
 
 # add_base_unit(bit)
 
-kB = units.kilo(byte)
-MB = units.mega(byte)
-GB = units.giga(byte)
-TB = units.tera(byte)
-PB = Unit.derived(TB, "PB", 1000)
-EB = Unit.derived(TB, "EB", 1000)
+kB = 1e3 *  byte # units.kilo(byte)
+MB = 1e6 *  byte # units.giga(byte)
+TB = 1e9 *  byte # units.tera(byte)
+PB = 1e12 * byte # Unit.derived(TB, "PB", 1000)
+EB = 1e15 * byte # Unit.derived(TB, "EB", 1000)
 
-KiB = Unit.derived(byte,"KiB", 1024)
-MiB = Unit.derived(KiB, "KiB", 1024)
-GiB = Unit.derived(MiB, "GiB", 1024)
-TiB = Unit.derived(GiB, "TiB", 1024)
-PiB = Unit.derived(TiB, "PiB", 1024)
-EiB = Unit.derived(PiB, "EiB", 1024)
+KiB = 2**10 * byte # Unit.derived(byte,"KiB", 1024)
+MiB = 2**10 * KiB  # Unit.derived(KiB, "KiB", 1024)
+GiB = 2**10 * MiB  # Unit.derived(MiB, "GiB", 1024)
+TiB = 2**10 * GiB  # Unit.derived(GiB, "TiB", 1024)
+PiB = 2**10 * TiB  # Unit.derived(TiB, "PiB", 1024)
+EiB = 2**10 * PiB  # Unit.derived(PiB, "EiB", 1024)
 
 def help():
     print("data units; base unit = bit (b)")

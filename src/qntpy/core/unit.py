@@ -5,11 +5,15 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Any
 
+from uncertainties import ufloat
+from uncertainties.core import AffineScalarFunc
+
 from qntpy.core import defs
 from qntpy.core.dimension import DimVec, Dim
+from qntpy.core.quantity import Quantity
+from qntpy.util.exceptions import InvalidUnitError, IncommensurableError
 from qntpy.rep import rep
 
-from qntpy.core.quantity import Quantity
 
 class Unit:
     """Represents a physical unit.
@@ -30,22 +34,25 @@ class Unit:
     `Unit.derived` is usually simpler and cleaner.
     
     """
+    vec: DimVec[Dim, int]
+    factor: AffineScalarFunc
+    offset: AffineScalarFunc
+    symbol: str
+    prefix: int
+    
     def __new__(cls, 
                 vec: DimVec[Dim, int], 
-                symbol: str, 
-                factor: float=1, 
-                offset: float=0,
-                prefix: int=0,
+                symbol: str | None=None, 
+                factor: AffineScalarFunc=ufloat(1, 0), 
+                offset: AffineScalarFunc=ufloat(0, 0),
+                prefix: int=0, 
                 ):
-        if vec.is_empty():
-            return factor
-        else:
-            return super().__new__(cls)
+        return factor if vec.is_empty() else super().__new__(cls)
     def __init__(self, 
                  vec: DimVec[Dim, int], 
                  symbol: str | None=None, 
-                 factor: float=1, 
-                 offset: float=0,
+                 factor: AffineScalarFunc=ufloat(1,0), 
+                 offset: AffineScalarFunc=ufloat(0,0),
                  prefix: int=0,
                  ) -> Unit:
         """Create a new unit, and return it. 
@@ -89,15 +96,23 @@ class Unit:
         - factor: One of the new unit is equal to `factor` + `offset` * `base_unit`.
         - offset: 0 * the new unit = `offset` * `base_unit`.
         """
-        self.vec = vec.copy()
-        self._symbol = symbol
-        self.factor = factor
-        self.offset = offset
-        self.prefix = prefix
+        self.vec: DimVec = vec.copy()
+        self._symbol: str = symbol
+        if isinstance(factor, AffineScalarFunc):
+            self.factor = factor
+        else:
+            self.factor = ufloat(factor, 0)
+        if isinstance(offset, AffineScalarFunc):
+            self.offset = offset
+        else:
+            self.offset = ufloat(offset, 0)
+        self.prefix: int = prefix
 
 
     @property
     def symbol(self):
+        if self.is_kg():
+            self._symbol = 'g'
         if self._symbol is None:
             from qntpy.rep.simplify import simplify
             self._symbol = simplify(self)
@@ -110,9 +125,18 @@ class Unit:
                 return f'{rep.exponent_to_abbrev(self.prefix, self.is_kg())}({self._symbol})'
     
     @symbol.setter
-    def set_symbol(self):
-        return NotImplementedError('Unit symbols cannot be manually modified!')
+    def _set_symbol(self):
+        raise NotImplementedError('Unit symbols cannot be manually modified')
 
+    @property
+    def std_dev(self) -> float:
+        """Return the standard deviation of the `factor` of this Unit."""
+        return AffineScalarFunc.std_dev(self.factor)
+    
+    @std_dev.setter
+    def _set_std_dev(self):
+        raise NotImplementedError("The standard deviation of this unit's factor cannot be manually modified")
+    
     def as_quantity(self) -> Quantity:
         return Quantity(1, self, bypass_checks=True)
 
@@ -140,13 +164,25 @@ class Unit:
             new_unit.prefix = base_unit.prefix
         new_unit._symbol = symbol
         return new_unit
+    
+    def __add__(self, other: Any) -> Quantity:
+        if isinstance(other, (Unit, Quantity)):
+            return Quantity(1, self, bypass_checks=True) + Quantity(1, other, bypass_checks=True)
+        else:
+            raise IncommensurableError(f"Unit {str(self)} is incommensurable with {str(other)}")
+        
+    def __sub__(self, other: Any) -> Quantity:
+        if isinstance(other, (Unit, Quantity)):
+            return 1*self - 1*other
+        else:
+            raise IncommensurableError(f"Unit {str(self)} is incommensurable with {str(other)}")
 
-    def __mul__(self, other: Any) -> Unit | 'Quantity':
+    def __mul__(self, other: Any) -> Unit | Quantity:
         from qntpy.core.quantity import Quantity
         if type(other) != Unit:
             try:
                 return Quantity(other, self)
-            except:
+            except ValueError:
                 raise ArithmeticError(f"Cannot multiply instance of Unit with instance of class {type(other)}!")
         selfs = self.vec.copy()
         others = other.vec.copy()
@@ -159,10 +195,16 @@ class Unit:
     def __rmul__(self, other: Any) -> Unit | 'Quantity':
         return self * other
 
-    def __pow__(self, other: float) -> Unit:
+    def __pow__(self, other: int) -> Unit:
+        if other == 1:
+            return self
         unit = self.copy()
         for i in unit.vec:
-            unit.vec[i] *= other
+            new_power = unit.vec[i]*other
+            if int(new_power) == new_power:
+                unit.vec[i] = new_power
+            else:
+                raise InvalidUnitError(f"({self})**({other}) would have non-integral dimensions!")
         unit.factor = unit.factor**other
         unit._symbol = None
         return unit
@@ -170,10 +212,13 @@ class Unit:
         return -1*self
     def __pos__(self) -> Unit:
         return self
+    def __abs__(self) -> Unit:
+        return self
+    
     def __truediv__(self, other: Any) -> Any:
         from qntpy.core.quantity import Quantity
         if type(other) == Quantity:
-            return Quantity(self.factor, self)/other
+            return self.as_quantity()/other
         elif type(other) != Unit:
             return Quantity(1/other, self)
         selfs  = self.vec.copy()
@@ -228,9 +273,15 @@ class Unit:
     def __repr__(self) -> str:
         return str(self)
     def __float__(self) -> float:
-        return float(self.factor)
+        if self.vec.is_empty():
+            return float(self.factor)
+        raise IncommensurableError(f"Unit {str(self)} is not convertible to a float")
     def __int__(self) -> int:
-        return int(self.factor)
+        if self.vec.is_empty():
+            return int(self.factor)
+        raise IncommensurableError(f"Unit {str(self)} is not convertible to an integer")
+        
+        
     def _dot_product(self, other: Unit) -> int:
         k=0
         for i in self.vec:
@@ -254,6 +305,6 @@ class Unit:
     def copy(self) -> Unit:
         return Unit(self.vec.copy(), self._symbol, self.factor, self.offset, self.prefix)
     
-    
+    __array_priority__ = 500
 
 defs.Unit = Unit

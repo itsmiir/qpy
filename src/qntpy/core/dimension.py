@@ -49,7 +49,7 @@ class DimVec(Dict):
         for key in self.keys():
             if type(key) is not Dim:
                 raise ValueError(f"Key {key} in DimVec is not of type Dim!")
-            if type(self[key]) is not int:
+            if int(self[key]) != self[key]:
                 raise ValueError(f"Value {self[key]} at key {key} in DimVec is not an int!")
             if self[key] == 0:
                 to_del.append(key)

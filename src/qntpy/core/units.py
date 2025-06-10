@@ -1,3 +1,5 @@
+from numpy import pi
+
 from qntpy.core.unit import Unit
 from qntpy.core.dimension import Dim, DimVec
 from qntpy.rep import rep
@@ -45,8 +47,25 @@ rad = One
 sr = One
 lm = cd * sr
 
-# unit definitions: approved others
+# unit definitions: others approved for use with the SI
+minute = Unit.derived(s, 'min', 60)
+h = Unit.derived(s, 'h', 60)
+d = Unit.derived(h, 'd', 24)
+
+au = Unit.derived(m, 'au', 149597870700)
+
+degree = pi / 180
+arcminute = degree / 60
+arcsecond = arcminute / 60
+
+ha = Unit.derived(m*m, 'ha', 10e4)
+
 L = Unit.derived(m*m*m, 'L', 1e-3)
+
+t = Unit.derived(kg, 't', 1e3)
+Da = Unit.derived(kg, 'Da', 1.6605390666050e-27)
+
+
 degC = Unit.derived(K, '°C', 1, 273.15)
 
 
