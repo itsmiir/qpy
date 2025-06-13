@@ -1,11 +1,8 @@
 """Contains logic for Units, the basis of physical calculation."""
 from __future__ import annotations
 
-from copy import deepcopy
-from enum import Enum, auto
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from uncertainties import ufloat
 from uncertainties.core import AffineScalarFunc
 
 from qntpy.core import defs
@@ -32,29 +29,28 @@ class Unit:
     ```
     You can also make units from scratch, but using either multiplication of primitive units or
     `Unit.derived` is usually simpler and cleaner.
-    
     """
     vec: DimVec[Dim, int]
-    factor: AffineScalarFunc
-    offset: AffineScalarFunc
+    factor: float | AffineScalarFunc
+    offset: float | AffineScalarFunc
     symbol: str
     prefix: int
     
     def __new__(cls, 
                 vec: DimVec[Dim, int], 
                 symbol: str | None=None, 
-                factor: AffineScalarFunc=ufloat(1, 0), 
-                offset: AffineScalarFunc=ufloat(0, 0),
+                factor: float | AffineScalarFunc=1, 
+                offset: float | AffineScalarFunc=0,
                 prefix: int=0, 
-                ):
+                ) -> float | AffineScalarFunc | Unit:
         return factor if vec.is_empty() else super().__new__(cls)
     def __init__(self, 
                  vec: DimVec[Dim, int], 
                  symbol: str | None=None, 
-                 factor: AffineScalarFunc=ufloat(1,0), 
-                 offset: AffineScalarFunc=ufloat(0,0),
+                 factor: float | AffineScalarFunc=1, 
+                 offset: float | AffineScalarFunc=0,
                  prefix: int=0,
-                 ) -> Unit:
+                 ) -> None:
         """Create a new unit, and return it. 
         
         
@@ -98,16 +94,9 @@ class Unit:
         """
         self.vec: DimVec = vec.copy()
         self._symbol: str = symbol
-        if isinstance(factor, AffineScalarFunc):
-            self.factor = factor
-        else:
-            self.factor = ufloat(factor, 0)
-        if isinstance(offset, AffineScalarFunc):
-            self.offset = offset
-        else:
-            self.offset = ufloat(offset, 0)
+        self.factor = factor
+        self.offset = offset
         self.prefix: int = prefix
-
 
     @property
     def symbol(self):
@@ -131,14 +120,9 @@ class Unit:
     @property
     def std_dev(self) -> float:
         """Return the standard deviation of the `factor` of this Unit."""
-        return AffineScalarFunc.std_dev(self.factor)
-    
-    @std_dev.setter
-    def _set_std_dev(self):
-        raise NotImplementedError("The standard deviation of this unit's factor cannot be manually modified")
-    
-    def as_quantity(self) -> Quantity:
-        return Quantity(1, self, bypass_checks=True)
+        if isinstance(self.factor, AffineScalarFunc):
+            return self.factor.std_dev
+        else: return 0
 
     @staticmethod
     def derived(base_unit: Unit, symbol: str=None, factor:float=1, offset:float=0) -> Unit:
@@ -164,7 +148,10 @@ class Unit:
             new_unit.prefix = base_unit.prefix
         new_unit._symbol = symbol
         return new_unit
-    
+        
+    def __quantity__(self) -> Quantity:
+        return Quantity(1, self, bypass_checks=True)
+
     def __add__(self, other: Any) -> Quantity:
         if isinstance(other, (Unit, Quantity)):
             return Quantity(1, self, bypass_checks=True) + Quantity(1, other, bypass_checks=True)
@@ -208,6 +195,7 @@ class Unit:
         unit.factor = unit.factor**other
         unit._symbol = None
         return unit
+    
     def __neg__(self) -> Unit:
         return -1*self
     def __pos__(self) -> Unit:
@@ -218,27 +206,13 @@ class Unit:
     def __truediv__(self, other: Any) -> Any:
         from qntpy.core.quantity import Quantity
         if type(other) == Quantity:
-            return self.as_quantity()/other
+            return self.__quantity__()/other
         elif type(other) != Unit:
             return Quantity(1/other, self)
-        selfs  = self.vec.copy()
-        others = other.vec.copy()
-        for k in others:
-            if k in selfs:
-                selfs[k] = -others[k] + selfs[k]
-            else:
-                selfs[k] = -others[k]
-        return Unit(selfs,None, self.factor/other.factor, prefix=self.prefix - other.prefix)
+        new_vec = self.vec - other.vec
+        return Unit(vec=new_vec, symbol=None, factor=self.factor/other.factor, prefix=self.prefix - other.prefix)
     def __rtruediv__(self, other: Any) -> Unit | Quantity:
         return self.invert() * other
-
-    def invert(self) -> Unit:
-        new_dimvec = self.vec.copy().invert()
-        new_factor = 1 / self.factor
-        new_prefix = -self.prefix
-        if self.is_kg():
-            new_prefix = self.prefix
-        return Unit(vec=new_dimvec, symbol=None, factor=new_factor, prefix=new_prefix)
         
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, Unit) and self.offset == other.offset and self.factor == other.factor and self.vec == other.vec
@@ -265,13 +239,10 @@ class Unit:
         if display_value != 1 or self.prefix != 0 or self.is_kg():
             return f"{str(display_value)+' ' if display_value != 1 else ''}{rep.exponent_to_abbrev(self.prefix, self.is_kg())}{strin}"
         else:
-            return strin
-    
-    def is_kg(self) -> bool:
-        return self.vec == DimVec({Dim.M: 1})
-    
+            return strin   
     def __repr__(self) -> str:
-        return str(self)
+        return f"{self.__class__.__name__}({repr(self.vec)}{', factor='+str(self.factor) if self.factor != 1 else ''}{', offset='+str(self.offset) if self.offset != 0 else ''})"
+    
     def __float__(self) -> float:
         if self.vec.is_empty():
             return float(self.factor)
@@ -280,25 +251,24 @@ class Unit:
         if self.vec.is_empty():
             return int(self.factor)
         raise IncommensurableError(f"Unit {str(self)} is not convertible to an integer")
+    def __bool__(self) -> bool:
+        return not self.vec.is_empty()
+
+    def invert(self) -> Unit:
+        """Return the reciprocal of this Unit.
         
+        This method should always return the multiplicative inverse of the object it is called on.
+        """
+        new_dimvec = -self.vec
+        new_factor = 1 / self.factor
+        new_prefix = -self.prefix
+        if self.is_kg():
+            new_prefix = self.prefix
+        return Unit(vec=new_dimvec, symbol=None, factor=new_factor, prefix=new_prefix)
+
+    def is_kg(self) -> bool:
+        return self.vec == DimVec({Dim.M: 1})
         
-    def _dot_product(self, other: Unit) -> int:
-        k=0
-        for i in self.vec:
-            try:
-                k += self.vec[i]*other.vec[i]
-            except KeyError as e:
-                pass
-        return k
-    def _orthogonal(self, other: Unit | Quantity) -> bool:
-        for i in self.vec:
-            try:
-                if not self.vec[i]*other.vec[i] == 0:
-                    return False
-            except KeyError as e:
-                pass
-        return True
-    
     def with_prefix(self, new_prefix: int) -> Unit:
         return Unit(self.vec.copy(), self._symbol, self.factor*(10**new_prefix), self.offset, self.prefix + new_prefix)
 
