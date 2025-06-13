@@ -166,4 +166,3 @@ def enumerated_repr():
     raise NotImplementedError()
 
 u_num.__repr__ = ufloat_SI_repr
-
