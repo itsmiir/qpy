@@ -48,7 +48,7 @@ lm = cd * sr
 
 # unit definitions: others approved for use with the SI
 minute = Unit.derived(s, 'min', 60)
-h = Unit.derived(s, 'h', 60)
+h = Unit.derived(minute, 'h', 60)
 d = Unit.derived(h, 'd', 24)
 
 au = Unit.derived(m, 'au', 149597870700)
