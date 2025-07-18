@@ -111,6 +111,7 @@ def print_ndarray(value: ndarray, **kwargs) -> str:
     
 def array_dispatch(value: ndarray, num_rep: NumRep, **kwargs) -> str:
     """Format a numpy array according to the recommendations of the SI Brochure 9th Edition, sections 5.4.3 through 5.4.5."""
+    pass
 
 def get_exp(value: num) -> tuple[int, float]:
     raw_exp = np.log10(value)
@@ -192,4 +193,4 @@ def value_to_SI_rep(value: object, num_rep: NumRep, **kwargs) -> str:
 def enumerated_repr():
     raise NotImplementedError()
 
-u_num.__str__ = si_format
+u_num.__str__ = ufloat_SI_repr
