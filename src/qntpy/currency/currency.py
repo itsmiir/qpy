@@ -1,4 +1,5 @@
 from qntpy.core.quantity import *
+from qntpy.core.dimension import Dim, DimVec
 import requests
 import json
 from datetime import date
@@ -80,7 +81,7 @@ def add_currency(name):
 
 _conversions = getRates()
 USD = Unit({"$": 1}, "USD")
-add_base_unit(USD)
+# add_base_unit(USD)
 
 for curr_name in _conversions['rates']:
     exec(f"{curr_name} = add_currency('{curr_name}')")

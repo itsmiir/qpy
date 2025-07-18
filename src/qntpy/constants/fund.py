@@ -39,12 +39,12 @@ t_P = l_P/c           # Planck time
 
 g_0 = 9.80665 * _units.m/_units.s/_units.s # avg surface gravity on earth
 
-e_0 = _ufloat(8.8541878188e-12, # vacuum electric permittivity
-              0.0000000014e-12) * _units.F / _units.m
-
+mu_0 = _ufloat(1.25663706127e-6, # vacuum magnetic permeability
+               0.00000000020e-6) * _units.N / _units.A / _units.A
+e_0 = 1 / (mu_0 * c**2) # vacuum electric permittivity
 alpha = e**2 / (4*_np.pi*e_0*hbar*c) # fine-structure constant
 
-mu_0 = 4*_np.pi*alpha*hbar/(e**2*c) # vacuum magnetic permeability
+
 k_e = 1 / (4*_np.pi*e_0) # Coulomb constant
 
 m_e = _ufloat(9.1093837139e-31,  # electron mass
@@ -72,7 +72,7 @@ def help():
     print("proton mass:          m_p:", m_p)
     print("neutron mass:         m_n:", m_n)
     print()
-    print("mean gravity of earth:  g_earth:", g_0)
+    print("mean gravity of earth:g_0:", g_0)
     print()
     print("Planck length:   l_planck:", l_P)
     print("Planck masss:    m_planck:", m_P)

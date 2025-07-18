@@ -6,10 +6,9 @@ and style conventions as published in Section 5 of the SI Brochure.
 
 from enum import Enum, auto
 from numbers import Number as num
-
 from numpy import number as np_num, ndarray
 import numpy as np
-from uncertainties.core import AffineScalarFunc as u_num, ufloat_fromstr
+from uncertainties.core import AffineScalarFunc as u_num
 
 from qntpy.rep.convention import NumRep
 
@@ -72,7 +71,7 @@ def str_to_superscript(s: str) -> str:
             new_str += c
     return new_str
 
-def to_superscript(num: int) -> str:
+def to_superscript(num: num) -> str:
     """Convert an integer to a superscript string."""
     n = str(num)
     new_n = ""
@@ -124,12 +123,40 @@ def get_exp(value: num) -> tuple[int, float]:
     mantissa = value / 10**exp
     return exp, mantissa
 
-def ufloat_SI_repr(value: u_num) -> str:
-    exp, mantissa = get_exp(value.nominal_value)
-    u_mantissa = value.std_dev / 10**exp
-    u_exp, u_mantissa = get_exp(u_mantissa)
-    u_prec = (1 - u_exp) if u_exp < -1 else 1
-    return(str(mantissa) + ' ' + str(u_mantissa) + ' ' + f'{u_mantissa:.{u_prec}f}')
+def ufloat_SI_repr(uval: u_num) -> str:
+    """
+    Format a ufloat into the SI-recommended format.
+    
+    Example:
+        ```
+        >>> uval = ufloat(6.67430e-11, 0.00015e-11)
+        >>> si_format(uval)
+        '6.67430(15)e-11'
+        ```
+    """
+    val = uval.nominal_value
+    err = uval.std_dev
+
+    if err == 0: return f"{val}"
+
+    # Get the exponent of the value
+    exponent = int(np.floor(np.log10(abs(val))) if val != 0 else 0)
+    sci_val = val / (10 ** exponent)
+    sci_err = err / (10 ** exponent)
+
+    # Determine number of digits in the uncertainty
+    err_exponent = np.floor(np.log10(abs(sci_err)))
+    digits = np.int64(max(0, -err_exponent + 1))
+
+    # Round the value and error to proper digits
+    rounded_val = np.round(sci_val, digits)
+    rounded_err = np.int64(np.round(sci_err * 10**digits))
+
+    # Compose the string
+    if exponent == 0:
+        return f"{rounded_val:.{digits}f}({rounded_err})"
+    else:
+        return f"{rounded_val:.{digits}f}({rounded_err}) ⨯ 10{to_superscript(exponent)}"
  
 def value_to_SI_rep(value: object, num_rep: NumRep, **kwargs) -> str:
     """Format a value to a numerical string according to the recommendations of the SI Brochure 9th Edition, sections 5.4.3 through 5.4.5.
@@ -165,4 +192,4 @@ def value_to_SI_rep(value: object, num_rep: NumRep, **kwargs) -> str:
 def enumerated_repr():
     raise NotImplementedError()
 
-u_num.__repr__ = ufloat_SI_repr
+u_num.__str__ = si_format
